@@ -34,3 +34,4 @@ To Do
 * Possibly other models can support region proposals and still be fast
 * Add Network in Network
 * Add Flickr style Fine Tuning
+* Alternatives to visualizing layers?  Deconvnets?  Projections?
