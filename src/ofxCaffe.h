@@ -130,43 +130,43 @@ public:
         
         // Load pre-trained net (binary proto) and associated labels
         if (model == OFXCAFFE_MODEL_VGG_16) {
-            net = new Net<float>(ofToDataPath("vgg-16.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("VGG_ILSVRC_16_layers.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/vgg-16.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/VGG_ILSVRC_16_layers.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_VGG_19) {
-            net = new Net<float>(ofToDataPath("vgg-19.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("VGG_ILSVRC_19_layers.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/vgg-19.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/VGG_ILSVRC_19_layers.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_HYBRID) {
-            net = new Net<float>(ofToDataPath("hybridCNN_deploy.prototxt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("hybridCNN_iter_700000.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/hybridCNN_deploy.prototxt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/hybridCNN_iter_700000.caffemodel", true));
             loadHybridLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_CAFFENET_8x8) {
-            net = new Net<float>(ofToDataPath("8x8-alexnet.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_caffenet_full_conv.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/8x8-alexnet.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_caffenet_full_conv.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_CAFFENET_34x17) {
-            net = new Net<float>(ofToDataPath("34x17-alexnet.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_caffenet_full_conv.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/34x17-alexnet.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_caffenet_full_conv.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_CAFFENET) {
-            net = new Net<float>(ofToDataPath("bvlc_reference_caffenet.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_reference_caffenet.caffemodel"));
+            net = new Net<float>(ofToDataPath("bvlc_reference_caffenet.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_reference_caffenet.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_GOOGLENET) {
-            net = new Net<float>(ofToDataPath("bvlc_googlenet.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_googlenet.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_googlenet.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_googlenet.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_RCNN_ILSVRC2013) {
-            net = new Net<float>(ofToDataPath("bvlc_reference_rcnn_ilsvrc13.txt"));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_reference_rcnn_ilsvrc13.caffemodel"));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_reference_rcnn_ilsvrc13.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_reference_rcnn_ilsvrc13.caffemodel", true));
             loadILSVRC2013();
         }
         else {
@@ -208,9 +208,9 @@ public:
         
             BlobProto blob_proto;
             if (model == OFXCAFFE_MODEL_HYBRID)
-                ReadProtoFromBinaryFileOrDie(ofToDataPath("hybridCNN_mean.binaryproto").c_str(), &blob_proto);
+                ReadProtoFromBinaryFileOrDie(ofToDataPath("../../../../../addons/ofxCaffe/models/hybridCNN_mean.binaryproto", true).c_str(), &blob_proto);
             else
-                ReadProtoFromBinaryFileOrDie(ofToDataPath("imagenet_mean.binaryproto").c_str(), &blob_proto);
+                ReadProtoFromBinaryFileOrDie(ofToDataPath("../../../../../addons/ofxCaffe/models/imagenet_mean.binaryproto", true).c_str(), &blob_proto);
             cout << "channels: " << blob_proto.channels() << endl;
             
             mean_img = cv::Mat(cv::Size(blob_proto.width(), blob_proto.height()), CV_8UC3);
@@ -568,7 +568,7 @@ private:
     void loadImageNetLabels()
     {
         ofFile fp;
-        fp.open(ofToDataPath("synset_words.txt"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/synset_words.txt", true));
         ofBuffer buf;
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
@@ -586,12 +586,14 @@ private:
         }
         
         fp.close();
+        
+        cout << "[ofxCaffe]:: Read " << labels.size() << " labels." << endl;
     }
     
     void loadILSVRC2012()
     {
         ofFile fp;
-        fp.open(ofToDataPath("ILSVRC2012.txt"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2012.txt", true));
         ofBuffer buf;
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
@@ -601,12 +603,14 @@ private:
         }
         
         fp.close();
+        
+        cout << "[ofxCaffe]:: Read " << labels.size() << " labels." << endl;
     }
     
     void loadILSVRC2013()
     {
         ofFile fp;
-        fp.open(ofToDataPath("ILSVRC2013.txt"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2013.txt", true));
         ofBuffer buf;
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
@@ -616,12 +620,14 @@ private:
         }
         
         fp.close();
+        
+        cout << "[ofxCaffe]:: Read " << labels.size() << " labels." << endl;
     }
     
     void loadILSVRC2014()
     {
         ofFile fp;
-        fp.open(ofToDataPath("ILSVRC2014.txt"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2014.txt", true));
         ofBuffer buf;
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
@@ -631,6 +637,8 @@ private:
         }
         
         fp.close();
+        
+        cout << "[ofxCaffe]:: Read " << labels.size() << " labels." << endl;
     }
     
     void loadHybridLabels()
@@ -639,7 +647,7 @@ private:
         ofFile fp;
         ofBuffer buf;
         
-        fp.open(ofToDataPath("synset_words.txt"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/synset_words.txt", true));
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
         {
@@ -657,7 +665,7 @@ private:
 
         fp.close();
         
-        fp.open(ofToDataPath("categoryIndex_hybridCNN.csv"));
+        fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/categoryIndex_hybridCNN.csv", true));
         buf = fp.readToBuffer();
         while(!buf.isLastLine())
         {
@@ -675,6 +683,8 @@ private:
         }
         
         fp.close();
+        
+        cout << "[ofxCaffe]:: Read " << labels.size() << " labels." << endl;
     }
     
     
