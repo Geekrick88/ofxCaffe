@@ -14,30 +14,38 @@
 		<string>https://github.com/BVLC/caffe.git</string>
 		<key>514672FCE38937AC851406E1D17B36238AC20C65</key>
 		<string>https://github.com/pkmital/ofxOpenCV2461.git</string>
+		<key>65CBA49EA793141DE9FCFDE43D1F60F8DD75D80B</key>
+		<string>github.com:pkmital/ofxCaffe.git</string>
 		<key>92F288102054365C4B11BAD078303B89B1B39C09</key>
 		<string>github.com:pkmital/pkmMatrix.git</string>
 		<key>99B563BF03F787C4CA57A98A27F146BE48E6EEF7</key>
 		<string>https://github.com/NickHardeman/openframeworks_osx_64.git</string>
+		<key>E8200E43EB586B06748042E0FCF867034507FCE2</key>
+		<string>github.com:pkmital/pkmHeatmap.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>addons/ofxCaffe/example-visualization/ofxCaffe-visualization.xcodeproj</string>
+	<string>example-visualization/ofxCaffe-visualization.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>4CD8186CE66A0AD46BD21DF2E9F43E65780546D2</key>
-		<string>../../../../../../libs/caffe-git</string>
+		<string>../../../../libs/caffe-git</string>
 		<key>514672FCE38937AC851406E1D17B36238AC20C65</key>
-		<string>../../../../..addons/ofxOpenCv2461/</string>
+		<string>../../../../of080osx-64bitaddons/ofxOpenCv2461</string>
+		<key>65CBA49EA793141DE9FCFDE43D1F60F8DD75D80B</key>
+		<string>../../..</string>
 		<key>92F288102054365C4B11BAD078303B89B1B39C09</key>
-		<string>../../../../../../pkm/pkmMatrix</string>
+		<string>../../../../pkm/pkmMatrix</string>
 		<key>99B563BF03F787C4CA57A98A27F146BE48E6EEF7</key>
-		<string>../../../../..</string>
+		<string>../../../../of080osx-64bit</string>
+		<key>E8200E43EB586B06748042E0FCF867034507FCE2</key>
+		<string>../../../../pkm/pkmHeatmap</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
-	<string>https://github.com/NickHardeman/openframeworks_osx_64.git</string>
+	<string>github.com:pkmital/ofxCaffe.git</string>
 	<key>IDESourceControlProjectVersion</key>
 	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>99B563BF03F787C4CA57A98A27F146BE48E6EEF7</string>
+	<string>65CBA49EA793141DE9FCFDE43D1F60F8DD75D80B</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
@@ -60,9 +68,25 @@
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>65CBA49EA793141DE9FCFDE43D1F60F8DD75D80B</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxCaffe</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>514672FCE38937AC851406E1D17B36238AC20C65</string>
 			<key>IDESourceControlWCCName</key>
 			<string>ofxOpenCv2461</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>E8200E43EB586B06748042E0FCF867034507FCE2</string>
+			<key>IDESourceControlWCCName</key>
+			<string>pkmHeatmap</string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
