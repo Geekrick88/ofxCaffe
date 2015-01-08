@@ -1,15 +1,15 @@
 # ofxCaffe
 ## Interface for Caffe: Convolutional Architectures for Fast Feature Embedding from BVLC.  
 
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-0.png)
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-1.png)
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-2.png)
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-3.png)
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-4.png)
-!(https://github.com/pkmital/ofxCaffe/raw/master/img-5.png)
+![img0](https://github.com/pkmital/ofxCaffe/raw/master/img-0.png)
+![img1](https://github.com/pkmital/ofxCaffe/raw/master/img-1.png)
+![img2](https://github.com/pkmital/ofxCaffe/raw/master/img-2.png)
+![img3](https://github.com/pkmital/ofxCaffe/raw/master/img-3.png)
+![img4](https://github.com/pkmital/ofxCaffe/raw/master/img-4.png)
+![img5](https://github.com/pkmital/ofxCaffe/raw/master/img-5.png)
 
-### Instructions
-================
+Instructions
+============
 
 (Warning: these probably won't work and will require edits/your help)
 
@@ -19,17 +19,17 @@
 *  clone [ofxOpenCv2461]() into of_directory/addons/ofxOpenCv2461 (could possibly be replaced by other opencv libraries, likely not the one that ships with openframeworks though; I've included OSX compiled OpenCV 2461 libraries in the addon/libs/opencv folder)
 *  clone pkmMatrix into of_directory/../pkm/pkmMatrix
 *  clone pkmHeatmap into of_directory/../pkm/pkmHeatmap
-*  Go to the Caffe Model Zoo and download all necessary .caffemodel files into the bin/data directory (could make a script for this...)
+*  Go to the Caffe Model Zoo and download all necessary .caffemodel files into the bin/data directory (could make a script for this...; I know this last step is ridiculous.  You have to go into the code and see what the names are and I probably changed the names too... well some of them anyways.  I will make a script if there is enough interest...)
 
 
-### Troubleshooting
-===================
+Troubleshooting
+===============
 
 * First make sure you can run Caffe and all tests (make runall)
 * Check the Project.xcconfig defines and make sure they match up with where things should be (library files/source code)
 
-### To Do
-=========
+To Do
+======
 
 * Properly crop images and mirror them to produce batch images
 * R-CNN region proposals
