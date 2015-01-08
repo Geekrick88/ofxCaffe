@@ -31,6 +31,17 @@ Instructions
 *  clone pkmHeatmap into of_directory/../pkm/pkmHeatmap (Converts grayscale images to RGB JET colormap using GPU)
 *  Go to the [Caffe Model Zoo](https://github.com/BVLC/caffe/wiki/Model-Zoo) and download all necessary .caffemodel files into the bin/data directory (could make a script for this...; I know this last step is ridiculous.  You have to go into the code and see what the names are and I probably changed the names too... well some of them anyways.  I will make a script if there is enough interest...)
 
+Example Project: Visualization
+==============================
+
+* '1': Toggle predicted label output 
+* '2': Toggle layer parameters
+* '3': Toggle layer outputs
+* '4': Toggle probabilities graph
+* '[' / ']': Change the current layer visualized
+* '-' / '+': Change the current model
+* '0': Toggle webcamera image
+
 
 Troubleshooting
 ===============
