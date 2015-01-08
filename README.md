@@ -19,7 +19,7 @@ Instructions
 *  clone [ofxOpenCv2461]() into of_directory/addons/ofxOpenCv2461 (could possibly be replaced by other opencv libraries, likely not the one that ships with openframeworks though; I've included OSX compiled OpenCV 2461 libraries in the addon/libs/opencv folder)
 *  clone pkmMatrix into of_directory/../pkm/pkmMatrix
 *  clone pkmHeatmap into of_directory/../pkm/pkmHeatmap
-*  Go to the Caffe Model Zoo and download all necessary .caffemodel files into the bin/data directory (could make a script for this...; I know this last step is ridiculous.  You have to go into the code and see what the names are and I probably changed the names too... well some of them anyways.  I will make a script if there is enough interest...)
+*  Go to the [Caffe Model Zoo](https://github.com/BVLC/caffe/wiki/Model-Zoo) and download all necessary .caffemodel files into the bin/data directory (could make a script for this...; I know this last step is ridiculous.  You have to go into the code and see what the names are and I probably changed the names too... well some of them anyways.  I will make a script if there is enough interest...)
 
 
 Troubleshooting
