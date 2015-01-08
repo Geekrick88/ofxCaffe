@@ -5,8 +5,6 @@
 ![img1](https://github.com/pkmital/ofxCaffe/raw/master/img-1.png)
 ![img2](https://github.com/pkmital/ofxCaffe/raw/master/img-2.png)
 ![img3](https://github.com/pkmital/ofxCaffe/raw/master/img-3.png)
-![img4](https://github.com/pkmital/ofxCaffe/raw/master/img-4.png)
-![img5](https://github.com/pkmital/ofxCaffe/raw/master/img-5.png)
 
 Instructions
 ============
