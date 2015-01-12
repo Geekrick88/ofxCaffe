@@ -40,7 +40,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "ofxCvMain.h"
+#include "ofxOpenCv.h"
 
 #include "pkmMatrix.h"
 #include "pkmHeatmap.h"
@@ -155,8 +155,8 @@ public:
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_CAFFENET) {
-            net = new Net<float>(ofToDataPath("bvlc_reference_caffenet.txt", true));
-            net->CopyTrainedLayersFrom(ofToDataPath("bvlc_reference_caffenet.caffemodel", true));
+            net = new Net<float>(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_reference_caffenet.txt", true));
+            net->CopyTrainedLayersFrom(ofToDataPath("../../../../../addons/ofxCaffe/models/bvlc_reference_caffenet.caffemodel", true));
             loadImageNetLabels();
         }
         else if (model == OFXCAFFE_MODEL_BVLC_GOOGLENET) {
@@ -214,7 +214,7 @@ public:
             cout << "channels: " << blob_proto.channels() << endl;
             
             mean_img = cv::Mat(cv::Size(blob_proto.width(), blob_proto.height()), CV_8UC3);
-            const unsigned int data_size = blob_proto.channels() * blob_proto.height() * blob_proto.width();
+            const size_t data_size = blob_proto.channels() * blob_proto.height() * blob_proto.width();
             
             for (int h = 0; h < blob_proto.height(); ++h) {
                 uchar* ptr = mean_img.ptr<uchar>(h);
@@ -233,6 +233,40 @@ public:
         bAllocated = true;
     }
     
+    pkm::Mat getLayerByName(string name = "conv5", bool b_collapse_data = true)
+    {
+        const boost::shared_ptr<Blob<float> >& result = net->blob_by_name(name);
+        pkm::Mat result_mat;
+        const float *fp_from = result->cpu_data();
+        
+        for (size_t n = 0; n < result->num(); n++)
+        {
+            for (size_t c = 0; c < result->channels(); c++)
+            {
+                pkm::Mat fp_to(result->height(), result->width());
+                size_t widthStep = result->width();
+                
+                for(size_t w = 0; w < result->width(); w++)
+                {
+                    for(size_t h = 0; h < result->height(); h++)
+                    {
+                        fp_to[h * widthStep + w] = fp_from[ ((n * result->channels() + c) * result->height() + h) * widthStep + w ] * 2.0;
+                    }
+                }
+                
+                if(b_collapse_data)
+                {
+                    float m = pkm::Mat::mean(fp_to.data, fp_to.size());
+                    result_mat.push_back(m);
+                }
+                else
+                    result_mat.push_back(fp_to);
+            }
+        }
+        return result_mat;
+        
+    }
+    
     // Setting the image automatically calls forward prop and finds the best label
     void forward(cv::Mat& img)
     {
@@ -248,23 +282,6 @@ public:
         Datum datum;
         CVMatToDatum(img, &datum);
         
-//        vector<Datum> datum_vector;
-//        datum_vector.push_back(datum);
-//        
-//        // Set vector for label
-//        vector<int> labelVector;
-//        labelVector.push_back(0);//push_back 0 for initialize purpose
-//        
-//        // Net initialization
-//        float loss = 0.0;
-//        boost::shared_ptr<MemoryDataLayer<float> > memory_data_layer;
-//        memory_data_layer = boost::static_pointer_cast<MemoryDataLayer<float> >(net->layer_by_name("data"));
-//        
-//        memory_data_layer->AddDatumVector(datum_vector);
-//        
-//        // Run ForwardPrefilled
-//        const vector<Blob<float>*>& result = net->ForwardPrefilled(&loss);
-        
         //get the blob
         Blob<float> blob(1, datum.channels(), datum.height(), datum.width());
         
@@ -275,14 +292,14 @@ public:
         blob_proto.set_height(datum.height());
         blob_proto.set_width(datum.width());
         const int data_size = datum.channels() * datum.height() * datum.width();
-        int size_in_datum = std::max<int>(datum.data().size(),
+        size_t size_in_datum = std::max<int>(datum.data().size(),
                                           datum.float_data_size());
-        for (int i = 0; i < size_in_datum; ++i) {
+        for (size_t i = 0; i < size_in_datum; ++i) {
             blob_proto.add_data(0.);
         }
         const string& data = datum.data();
         if (data.size() != 0) {
-            for (int i = 0; i < size_in_datum; ++i) {
+            for (size_t i = 0; i < size_in_datum; ++i) {
                 blob_proto.set_data(i, blob_proto.data(i) + (uint8_t)data[i]);
             }
         }
@@ -319,7 +336,7 @@ public:
             result_mat.max(max, max_i);
             pkm::Mat result_sliced;
             result_sliced = result_mat_grid.rowRange(max_i, max_i+1, false);
-            unsigned long max_ixy;
+            size_t max_ixy;
             float max_sliced;
             result_sliced.max(max_sliced, max_ixy);
             max_x = max_ixy % result[0]->height();
@@ -371,11 +388,11 @@ public:
     }
     
     // Draws the first network layer's parameters
-    void drawLayerXParams(int px = 0,
-                          int py = 60,
-                          int width = 1280,
-                          int images_per_row = 32,
-                          int layer_num = 0)
+    void drawLayerXParams(size_t px = 0,
+                          size_t py = 60,
+                          size_t width = 1280,
+                          size_t images_per_row = 32,
+                          size_t layer_num = 0)
     {
         boost::shared_ptr<Blob<float> > layer1 = net->params()[layer_num];
         string layer_name = net->layer_names()[layer_num];
@@ -394,8 +411,8 @@ public:
         // go from Caffe's layout to many images in opencv
         // number N x channel K x height H x width W. Blob memory is row-major in layout so the last / rightmost dimension changes fastest. For example, the value at index (n, k, h, w) is physically located at index ((n * K + k) * H + h) * W + w.
         const float *fp_from = layer1->cpu_data();
-        const int max_channels = std::min<int>(layer1->channels(), 3);
-        for(int n = 0; n < layer1->num(); n++)
+        const size_t max_channels = std::min<int>(layer1->channels(), 3);
+        for(size_t n = 0; n < layer1->num(); n++)
         {
             ofxCvColorImage *img = layer1_imgs[n];
             if(img->getWidth() != layer1->width() ||
@@ -405,11 +422,11 @@ public:
             unsigned char *fp_to = (unsigned char *)img->getCvImage()->imageData;
             cv::Mat to(img->getCvImage());
             int widthStep = img->getCvImage()->widthStep;
-            for(int c = 0; c < max_channels; c++)
+            for(size_t c = 0; c < max_channels; c++)
             {
-                for(int w = 0; w < layer1->width(); w++)
+                for(size_t w = 0; w < layer1->width(); w++)
                 {
-                    for(int h = 0; h < layer1->height(); h++)
+                    for(size_t h = 0; h < layer1->height(); h++)
                     {
                         fp_to[h * widthStep + 3 * w + c] = fp_from[ ((n * layer1->channels() + c) * layer1->height() + h) * layer1->width() + w ] * 255.0 + + 128.0;
                     }
@@ -423,11 +440,11 @@ public:
             int drawheight = drawwidth;
             
             img->draw(px + nx * drawwidth + nx * padding + padding,
-                      py + ny * drawheight + ny * padding + padding,
+                      py + ny * drawheight + ny * padding + padding + 20,
                       drawwidth, drawheight);
         }
         
-        ofDrawBitmapStringHighlight("layer: " + layer_name + " " + oss.str() + " (only the first 3 channels are visualized as RGB)", px + 20, py + 20);
+        ofDrawBitmapStringHighlight("layer: " + layer_name + " " + oss.str() + " (only the first 3 channels are visualized as RGB)", px + 20, py + 10);
     }
     
     int getTotalNumBlobs()
@@ -436,11 +453,11 @@ public:
     }
     
     // Draws the first network layer's output of the convolution.
-    void drawLayerXOutput(int px = 0,
-                          int py = 200,
-                          int width = 1280,
-                          int images_per_row = 32,
-                          int layer_num = 1)
+    void drawLayerXOutput(size_t px = 0,
+                          size_t py = 200,
+                          size_t width = 1280,
+                          size_t images_per_row = 32,
+                          size_t layer_num = 1)
     {
         boost::shared_ptr<Blob<float> > layer1 = net->blobs()[layer_num];
         string layer_name = net->blob_names()[layer_num];
@@ -457,9 +474,9 @@ public:
         
         // number N x channel K x height H x width W. Blob memory is row-major in layout so the last / rightmost dimension changes fastest. For example, the value at index (n, k, h, w) is physically located at index ((n * K + k) * H + h) * W + w.
         const float *fp_from = layer1->cpu_data();
-        for(int n = 0; n < layer1->num(); n++)
+        for(size_t n = 0; n < layer1->num(); n++)
         {
-            for(int c = 0; c < layer1->channels(); c++)
+            for(size_t c = 0; c < layer1->channels(); c++)
             {
                 ofxCvGrayscaleImage *img = layer1_output_imgs[n];
                 if(img->getWidth() != layer1->width() ||
@@ -469,58 +486,65 @@ public:
                 cv::Mat to(img->getCvImage());
                 int widthStep = img->getCvImage()->widthStep;
                 
-                for(int w = 0; w < layer1->width(); w++)
+                for(size_t w = 0; w < layer1->width(); w++)
                 {
-                    for(int h = 0; h < layer1->height(); h++)
+                    for(size_t h = 0; h < layer1->height(); h++)
                     {
                         fp_to[h * widthStep + w] = fp_from[ ((n * layer1->channels() + c) * layer1->height() + h) * layer1->width() + w ] * 2.0;
                     }
                 }
                 img->flagImageChanged();
-                int nx = (n*layer1->channels() + c) % images_per_row;
-                int ny = (n*layer1->channels() + c) / images_per_row;
-                int padding = 1;
-                int drawwidth = (width - padding * images_per_row) / (float)images_per_row;
-                int drawheight = drawwidth;
+                size_t nx = (n*layer1->channels() + c) % images_per_row;
+                size_t ny = (n*layer1->channels() + c) / images_per_row;
+                size_t padding = 1;
+                size_t drawwidth = (width - padding * images_per_row) / (float)images_per_row;
+                size_t drawheight = drawwidth;
 
                 ofPushMatrix();
                 ofTranslate(px + nx * drawwidth + nx * padding,
-                            py + ny * drawheight + ny * padding);
+                            py + ny * drawheight + ny * padding + 20);
                 
-                cmap.begin(img->getTextureReference());
+                cmap.begin(img->getTexture());
                 img->draw(0, 0, drawwidth, drawheight);
                 cmap.end();
                 ofPopMatrix();
             }
         }
         
-        ofDrawBitmapStringHighlight("layer: " + layer_name + " " + oss.str(), px + 20, py + 20);
+        ofDrawBitmapStringHighlight("layer: " + layer_name + " " + oss.str(), px + 20, py + 10);
     }
     
-    void drawProbabilities(int px, int py, int w, int h)
+    void drawGraph(const pkm::Mat &mat, string title, size_t px, size_t py, size_t w, size_t h, float scale = 1.0f)
     {
         ofPushMatrix();
         
         float padding = 10;
         ofSetColor(0, 0, 0, 180);
         
-        ofRect(px, py, w, h);
+        ofDrawRectangle(px, py, w, h);
         
         ofTranslate(px + padding, py + h - padding);
         
         ofSetColor(255);
         
-        ofDrawBitmapStringHighlight("probabilities", 10, 10);
+        ofDrawBitmapStringHighlight(title, 10, 10);
         
-        float step = (w - 2.0 * padding) / (float)result_mat.size();
-        float height_scale = (h - 2.0 * padding) / 1.0; //  / max
-        for(int i = 1; i < result_mat.size(); i++)
+        float step = (w - 2.0 * padding) / (float)mat.size();
+        
+        
+        float height_scale = (h - 2.0 * padding) / scale;
+        for(size_t i = 1; i < mat.size(); i++)
         {
-            ofLine((i - 1) * step, -result_mat[i-1] * height_scale,
-                   i * step, -result_mat[i] * height_scale);
+            ofDrawLine((i - 1) * step, -mat[i-1] * height_scale,
+                   i * step, -mat[i] * height_scale);
         }
         
         ofPopMatrix();
+    }
+    
+    void drawProbabilities(size_t px, size_t py, size_t w, size_t h)
+    {
+        drawGraph(result_mat, "probabilities", px, py, w, h, 1.0f);
     }
     
     
@@ -551,11 +575,11 @@ private:
     
     // Value and Index of max
     float max = 0;
-    unsigned long max_i = 0;
-    unsigned short max_x, max_y;
+    size_t max_i = 0;
+    size_t max_x, max_y;
     
     // necessary for input layer
-    unsigned short width, height;
+    size_t width, height;
     
     // imagenet or hybrid labels
     vector<string> labels;
@@ -569,15 +593,14 @@ private:
     {
         ofFile fp;
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/synset_words.txt", true));
-        ofBuffer buf;
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer(fp);
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
+            cout << line << endl;
             std::vector<std::string> strs;
             boost::split(strs, line, boost::is_any_of("\t "));
             string label;
-            for(int i = 1; i < strs.size(); i++)
+            for(size_t i = 1; i < strs.size(); i++)
             {
                 label += strs[i];
                 label += " ";
@@ -594,11 +617,9 @@ private:
     {
         ofFile fp;
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2012.txt", true));
-        ofBuffer buf;
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer(fp);
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
             labels.push_back(line);
         }
         
@@ -611,11 +632,9 @@ private:
     {
         ofFile fp;
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2013.txt", true));
-        ofBuffer buf;
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer(fp);
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
             labels.push_back(line);
         }
         
@@ -628,11 +647,9 @@ private:
     {
         ofFile fp;
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/ILSVRC2014.txt", true));
-        ofBuffer buf;
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer(fp);
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
             labels.push_back(line);
         }
         
@@ -648,14 +665,13 @@ private:
         ofBuffer buf;
         
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/synset_words.txt", true));
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer(fp);
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
             std::vector<std::string> strs;
             boost::split(strs, line, boost::is_any_of("\t "));
             string label;
-            for(int i = 1; i < strs.size(); i++)
+            for(size_t i = 1; i < strs.size(); i++)
             {
                 label += strs[i];
                 label += " ";
@@ -666,10 +682,9 @@ private:
         fp.close();
         
         fp.open(ofToDataPath("../../../../../addons/ofxCaffe/models/categoryIndex_hybridCNN.csv", true));
-        buf = fp.readToBuffer();
-        while(!buf.isLastLine())
-        {
-            string line(buf.getNextLine());
+        ofBuffer buffer2(fp);
+        for (ofBuffer::Line it = buffer2.getLines().begin(), end = buffer2.getLines().end(); it != end; ++it) {
+            string line = *it;
             std::vector<std::string> strs;
             boost::split(strs, line, boost::is_any_of("\t "));
             cout << strs[0] << endl;
@@ -696,17 +711,17 @@ private:
         datum->set_width(cv_img.cols);
         datum->clear_data();
         datum->clear_float_data();
-        int datum_channels = datum->channels();
-        int datum_height = datum->height();
-        int datum_width = datum->width();
-        int datum_size = datum_channels * datum_height * datum_width;
+        size_t datum_channels = datum->channels();
+        size_t datum_height = datum->height();
+        size_t datum_width = datum->width();
+        size_t datum_size = datum_channels * datum_height * datum_width;
         std::string buffer(datum_size, ' ');
-        for (int h = 0; h < datum_height; ++h) {
+        for (size_t h = 0; h < datum_height; ++h) {
             const uchar* ptr = cv_img.ptr<uchar>(h);
-            int img_index = 0;
-            for (int w = 0; w < datum_width; ++w) {
-                for (int c = 0; c < datum_channels; ++c) {
-                    int datum_index = (c * datum_height + h) * datum_width + w;
+            size_t img_index = 0;
+            for (size_t w = 0; w < datum_width; ++w) {
+                for (size_t c = 0; c < datum_channels; ++c) {
+                    size_t datum_index = (c * datum_height + h) * datum_width + w;
                     buffer[datum_index] = static_cast<char>(ptr[img_index++]);
                 }
             }

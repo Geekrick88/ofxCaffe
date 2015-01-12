@@ -39,7 +39,7 @@ void testApp::setup(){
     camera.initGrabber(width, height);
     color_img.allocate(width, height);
     
-    current_model = 6;
+    current_model = 0;
     
     caffe = std::shared_ptr<ofxCaffe>(new ofxCaffe());
     caffe->initModel(ofxCaffe::getModelTypes()[current_model]);
@@ -89,12 +89,13 @@ void testApp::draw(){
     
         ofDrawBitmapStringHighlight("model (-/+):  " + caffe->getModelTypeNames()[current_model], 20, 30);
         
+        ofDisableAlphaBlending();
         if (b_1)
             caffe->drawLabelAt(20, 50);
         if (b_2)
             caffe->drawLayerXParams(0, 80, width, 32, layer_num);
         if (b_3)
-            caffe->drawLayerXOutput(0, 420, width, 32, layer_num);
+            caffe->drawLayerXOutput(0, 80, width, 32, layer_num);
         if (b_4)
             caffe->drawProbabilities(0, 500, width, 200);
         b_mutex = false;
@@ -135,6 +136,7 @@ void testApp::keyPressed(int key){
     {
         current_model = (current_model == 0) ? (ofxCaffe::getTotalModelNums() - 1)  : (current_model - 1);
         while (b_mutex) {} b_mutex = true;
+        caffe.reset();
         caffe = std::shared_ptr<ofxCaffe>(new ofxCaffe());
         caffe->initModel(ofxCaffe::getModelTypes()[current_model]);
         b_mutex = false;
@@ -143,6 +145,7 @@ void testApp::keyPressed(int key){
     {
         current_model = (current_model + 1) % ofxCaffe::getTotalModelNums();
         while (b_mutex) {} b_mutex = true;
+        caffe.reset();
         caffe = std::shared_ptr<ofxCaffe>(new ofxCaffe());
         caffe->initModel(ofxCaffe::getModelTypes()[current_model]);
         b_mutex = false;
