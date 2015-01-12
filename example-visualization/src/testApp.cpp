@@ -57,7 +57,7 @@ void testApp::update(){
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
     camera.update();
-    color_img.setFromPixels(camera.getPixelsRef());
+    color_img.setFromPixels(camera.getPixels());
     cv::Mat img(color_img.getCvImage()), img2;
     img.copyTo(img2);
     if(!b_mutex)

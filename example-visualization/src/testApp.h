@@ -55,7 +55,7 @@ public:
 	
     //--------------------------------------------------------------
     // camera and opencv image objects
-    ofQTKitGrabber camera;
+    ofVideoGrabber camera;
     ofxCvColorImage color_img;
     
     //--------------------------------------------------------------

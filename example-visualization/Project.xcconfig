@@ -5,7 +5,7 @@ OF_PATH = ../../..
 //THIS HAS ALL THE HEADER AND LIBS FOR OF CORE
 #include "../../../libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig"
 
-OPENCV_HEADERS_PATH = $(OF_PATH)/addons/ofxOpenCv2461/libs/opencv/include
+OPENCV_HEADERS_PATH = $(OF_PATH)/addons/ofxOpenCv/libs/opencv/include
 OPENCV_LIBS_PATH = ../../../addons/ofxCaffe/libs/opencv
 
 //ICONS - NEW IN 0072 
@@ -31,6 +31,10 @@ CAFFE_LIBS_PATH = ../../../addons/ofxCaffe/libs/caffe/lib
 CAFFE_HEADERS_PATH = ../../../addons/ofxCaffe/libs/caffe/include
 CAFFE_LIBS = -lcaffe
 
+LIBCLUSTER_LIBS_PATH = ../../../../pkm/pkmDPGMM/libcluster/lib
+LIBCLUSTER_HEADERS_PATH = ../../../../pkm/pkmDPGMM/libcluster/include
+LIBCLUSTER_LIBS = -llibcluster
+
 OTHER_LDFLAGS = $(OF_CORE_LIBS) $(CAFFE_DEPENDS_LIBS) $(CUDA_LIBS) //$(CAFFE_LIBS)
 LIBRARY_SEARCH_PATHS = $(CAFFE_DEPENDS_LIBS_PATH) $(CUDA_LIBS_PATH) $(CAFFE_LIBS_PATH)
-HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS) $(OPENCV_HEADERS_PATH) $(CAFFE_DEPENDS_HEADERS_PATH) $(CUDA_HEADERS_PATH) $(CAFFE_HEADERS_PATH)
+HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS) $(CAFFE_DEPENDS_HEADERS_PATH) $(OPENCV_HEADERS_PATH) $(CUDA_HEADERS_PATH) $(CAFFE_HEADERS_PATH)
