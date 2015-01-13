@@ -110,6 +110,7 @@ void testApp::draw(){
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
+    cout << key << endl;
     if (key == '0')
         b_0 = !b_0;
     else if (key == '1')

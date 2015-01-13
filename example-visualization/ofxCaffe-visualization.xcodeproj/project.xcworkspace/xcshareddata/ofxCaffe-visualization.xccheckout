@@ -36,11 +36,11 @@
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</key>
-		<string>../../../../..</string>
+		<string>../../../..</string>
 		<key>3042639ABAA77C395ACAF536FBB539A4777CE117</key>
-		<string>../../../../../../pkm/pkmDPGMM</string>
+		<string>../../../../pkm/pkmDPGMM</string>
 		<key>4B65BF5DC7B03878618377E61E54D5C228E01B81</key>
-		<string>../../../../../../pkm/pkmMSCR</string>
+		<string>../../../../pkm/pkmMSCR</string>
 		<key>4CD8186CE66A0AD46BD21DF2E9F43E65780546D2</key>
 		<string>../../../../libs/caffe-git</string>
 		<key>514672FCE38937AC851406E1D17B36238AC20C65</key>
@@ -52,7 +52,7 @@
 		<key>99B563BF03F787C4CA57A98A27F146BE48E6EEF7</key>
 		<string>../../../../of080osx-64bit</string>
 		<key>E3B462FF0A7D74A1FB2FF0354B7A75912B5EDF71</key>
-		<string>../../../../../../pkm/pkmOpticalFlow</string>
+		<string>../../../../pkm/pkmOpticalFlow</string>
 		<key>E8200E43EB586B06748042E0FCF867034507FCE2</key>
 		<string>../../../../pkm/pkmHeatmap</string>
 	</dict>
@@ -70,7 +70,7 @@
 			<key>IDESourceControlWCCIdentifierKey</key>
 			<string>2DE9C8846D9375EAACFABA8963120E8E7719BAF5</string>
 			<key>IDESourceControlWCCName</key>
-			<string>..</string>
+			<string></string>
 		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>

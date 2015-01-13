@@ -51,6 +51,248 @@ using namespace caffe;
 using namespace std;
 
 
+#ifdef WITH_OFXCAFFE_LSTM
+
+class ofxCaffeLSTM
+{
+public:
+    typedef enum {
+        OFXCAFFE_LSTM_MODEL_DEEP_LONG,
+        OFXCAFFE_LSTM_MODEL_DEEP_SHORT,
+        OFXCAFFE_LSTM_MODEL_SHALLOW_LONG,
+        OFXCAFFE_LSTM_MODEL_SHALLOW_SHORT,
+        OFXCAFFE_LSTM_MODEL_NOT_ALLOCATED
+    } OFXCAFFE_LSTM_MODEL_TYPE;
+    
+    ofxCaffeLSTM()
+    :
+    bAllocated(false)
+    {
+        // Set GPU
+        Caffe::set_mode(Caffe::GPU);
+        int device_id = 0;
+        Caffe::SetDevice(device_id);
+        LOG(INFO) << "Using GPU";
+        
+        // Set to TEST Phase
+        Caffe::set_phase(Caffe::TEST);
+        
+        model = OFXCAFFE_LSTM_MODEL_NOT_ALLOCATED;
+    }
+    
+    ~ofxCaffeLSTM()
+    {
+        if(bAllocated)
+        {
+            
+        }
+    }
+    
+    static vector<ofxCaffeLSTM::OFXCAFFE_LSTM_MODEL_TYPE> getModelTypes()
+    {
+        vector<ofxCaffeLSTM::OFXCAFFE_LSTM_MODEL_TYPE> d;
+        d.push_back(OFXCAFFE_LSTM_MODEL_DEEP_LONG);
+        d.push_back(OFXCAFFE_LSTM_MODEL_DEEP_SHORT);
+        d.push_back(OFXCAFFE_LSTM_MODEL_SHALLOW_LONG);
+        d.push_back(OFXCAFFE_LSTM_MODEL_SHALLOW_SHORT);
+        return d;
+    }
+    
+    static vector<string> getModelTypeNames()
+    {
+        vector<string> d;
+        d.push_back("LSTM Deep Long");
+        d.push_back("LSTM Deep Short");
+        d.push_back("LSTM Shallow Long");
+        d.push_back("LSTM Shallow Short");
+        return d;
+    }
+    
+    static int getTotalModelNums()
+    {
+        return getModelTypes().size();
+    }
+    
+    
+    void initModel(OFXCAFFE_LSTM_MODEL_TYPE model)
+    {
+        this->model = model;
+        string net_solver;
+        sequence_length = 320;
+        if (model == OFXCAFFE_LSTM_MODEL_DEEP_LONG)
+        {
+            net_solver = string("../../../../../addons/ofxCaffe/models/deep_lstm_long_solver.prototxt");
+        }
+        else if (model == OFXCAFFE_LSTM_MODEL_DEEP_SHORT)
+        {
+            net_solver = string("../../../../../addons/ofxCaffe/models/deep_lstm_short_solver.prototxt");
+        }
+        else if (model == OFXCAFFE_LSTM_MODEL_SHALLOW_LONG)
+        {
+            net_solver = string("../../../../../addons/ofxCaffe/models/shallow_lstm_long_solver.prototxt");
+        }
+        else if (model == OFXCAFFE_LSTM_MODEL_SHALLOW_SHORT)
+        {
+            net_solver = string("../../../../../addons/ofxCaffe/models/shallow_lstm_short_solver.prototxt");
+        }
+        else
+        {
+            
+        }
+        
+        caffe::SolverParameter solver_param;
+        caffe::ReadProtoFromTextFileOrDie(ofToDataPath(net_solver, true).c_str(), &solver_param);
+        
+        solver.reset(GetSolver<float>(solver_param));
+        net_train = solver->net();
+        net_test = solver->test_nets()[0];
+        
+        solver->PreSolve();
+        
+    }
+    
+    // addTrainingExample...: each row as as sequence...
+    // train()
+    
+    double f_x(double t) {
+        return 0.5*sin(2*t) - 0.05*cos(17*t + 0.8)
+        + 0.05*sin(25*t+10) - 0.02*cos(45*t + 0.3);
+    }
+    
+    void makeTrainingData(pkm::Mat training_data)
+    {
+        const unsigned char input = 0;
+        datum.set_channels(1);
+        datum.set_width(1);
+        datum.set_height(1);
+        datum.set_data(&input, 1);
+        
+        
+        // Scale data to lie on [-1, 1]
+        float mean = 0;
+        float max_abs = 0;
+        for (int i = 0; i < sequence_length; ++i) {
+            float val = f_x(i * 0.01);
+            max_abs = max(max_abs, abs(val));
+        }
+        
+        // Subtract mean
+        for (int i = 0; i < sequence_length; ++i) {
+            mean += f_x(i * 0.01) / max_abs;
+        }
+        mean /= sequence_length;
+        
+        // Make t
+        for (int i = 0; i < sequence_length; ++i) {
+            vector<float> l;
+            float y = f_x(i*0.01) / max_abs - mean;
+            l.push_back(y);
+            data.push_back(datum);
+            labels.push_back(l);
+        }
+        
+        layers = net_train->layers();
+        layer_param = layers[0]->layer_param();
+        batch_size = layer_param.memory_data_param().batch_size();
+        CHECK_EQ(sequence_length % batch_size, 0) << "sequence length should be divided by batchsize";
+        
+        
+        for (int i = 0; i < sequence_length / batch_size; ++i) {
+            vector<Datum> d;
+            vector<vector<float> > l;
+            
+            for (int j = 0; j < batch_size; ++j) {
+                d.push_back(datum);
+                int idx = i * batch_size + j;
+                vector<float> tmp;
+                tmp.push_back(labels[idx].at(0));
+                l.push_back(tmp);
+            }
+            
+            batch_data.push_back(d);
+            batch_labels.push_back(l);
+        }
+    }
+    
+    void train()
+    {
+        float smoothed_loss = 0;
+        
+        Caffe::set_phase(Caffe::TRAIN);
+        int iter = 0;
+        while(!solver->IsFinished()) {
+            int batch_idx = iter % (sequence_length / batch_size);
+            
+            vector<Datum>& batch_d = batch_data[batch_idx];
+            vector<vector< float> >& batch_l = batch_labels[batch_idx];
+            
+            ((SeqMemoryDataLayer<float>*)layers[0].get())->DataFetch(batch_d, batch_l, batch_idx == 0);
+            solver->SolveIter(smoothed_loss, losses);
+            iter++;
+        }
+    }
+    
+    void test(pkm::Mat data)
+    {
+        // Output Test
+        Caffe::set_phase(Caffe::TEST);
+        net_test->ShareTrainedLayersWith(net_train.get());
+        vector<Blob<float>* > bottom;
+        const vector<boost::shared_ptr<Layer<float> > >& test_layers = net_test->layers();
+        for (int i = 0; i < sequence_length; ++i) {
+            ((SeqMemoryDataLayer<float>*)test_layers[0].get())->DataFetch(datum, i == 0);
+            const vector<Blob<float>* >& result = net_test->Forward(bottom);
+            CHECK_EQ(result.size(), 1);
+            const float* output = result[0]->cpu_data();
+            CHECK_EQ(result[0]->count(), 1);
+            vector<float>& l = labels[i];
+            cout << l[0] << " " << output[0] << endl;
+        }
+    }
+    
+    void setSequenceLength(size_t length)
+    {
+        sequence_length = length;
+    }
+    
+    size_t getSequenceLength()
+    {
+        return sequence_length;
+    }
+    
+private:
+    // Which model is loaded
+    OFXCAFFE_LSTM_MODEL_TYPE model;
+    
+    // Load net
+    boost::shared_ptr<Net<float> > net_train, net_test;
+    
+    // Training layers
+    vector<boost::shared_ptr<Layer<float> > > layers;
+    LayerParameter layer_param;
+    
+    // Training batch data
+    vector<vector<Datum> > batch_data;
+    vector<vector<vector<float> > > batch_labels;
+    
+    // Solver
+    boost::shared_ptr<Solver<float> > solver;
+    
+    vector<Datum> data;
+    vector<vector<float> > labels;
+    vector<float> losses;
+    
+    Datum datum;
+    
+    // Input parameter's sequence length, and batch size
+    size_t sequence_length, batch_size;
+    
+    // simple flag for when the model has been allocated
+    bool bAllocated;
+};
+
+#endif
+
 class ofxCaffe {
     
 public:
@@ -471,6 +713,8 @@ public:
             img->allocate(layer1->width(), layer1->height());
             layer1_output_imgs.push_back(img);
         }
+        
+        ofSetColor(255);
         
         // number N x channel K x height H x width W. Blob memory is row-major in layout so the last / rightmost dimension changes fastest. For example, the value at index (n, k, h, w) is physically located at index ((n * K + k) * H + h) * W + w.
         const float *fp_from = layer1->cpu_data();

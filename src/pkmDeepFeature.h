@@ -21,7 +21,10 @@ public:
     {
         caffe->forward(img);
         feature_fc5 = caffe->getLayerByName("conv5", true);
+        feature_fc5.setTranspose();
+        
         feature_prob = caffe->getLayerByName("prob", false);
+        feature_prob.setTranspose();
     }
     
     void draw()

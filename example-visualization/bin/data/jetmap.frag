@@ -42,5 +42,5 @@ void main() {
         gl_FragColor.gb = vec2(0.0, 0.0);
     }
     
-    gl_FragColor.a = dist;
+     gl_FragColor.a = 1.0;
 }
