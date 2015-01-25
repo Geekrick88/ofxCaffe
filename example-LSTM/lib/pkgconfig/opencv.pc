@@ -1,0 +1,13 @@
+# Package Information for pkg-config
+
+prefix=build
+exec_prefix=${prefix}
+libdir=
+includedir_old=${prefix}/include/opencv
+includedir_new=${prefix}/include
+
+Name: OpenCV
+Description: Open Source Computer Vision Library
+Version: 2.4.6.1
+Libs:  ${exec_prefix}/lib/libopencv_contrib.a ${exec_prefix}/lib/libopencv_stitching.a ${exec_prefix}/lib/libopencv_nonfree.a ${exec_prefix}/lib/libopencv_ocl.a ${exec_prefix}/lib/libopencv_superres.a ${exec_prefix}/lib/libopencv_ts.a ${exec_prefix}/lib/libopencv_videostab.a ${exec_prefix}/lib/libopencv_gpu.a ${exec_prefix}/lib/libopencv_legacy.a ${exec_prefix}/lib/libopencv_ml.a ${exec_prefix}/lib/libopencv_objdetect.a ${exec_prefix}/lib/libopencv_calib3d.a ${exec_prefix}/lib/libopencv_photo.a ${exec_prefix}/lib/libopencv_video.a ${exec_prefix}/lib/libopencv_features2d.a ${exec_prefix}/lib/libopencv_highgui.a ${exec_prefix}/lib/libopencv_flann.a ${exec_prefix}/lib/libopencv_imgproc.a ${exec_prefix}/lib/libopencv_core.a -framework AppKit -framework QuartzCore -framework QTKit -framework Cocoa -framework OpenCL stdc++ /usr/lib/libz.dylib
+Cflags: -I${includedir_old} -I${includedir_new}

@@ -175,7 +175,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "596"
             endingLineNumber = "596"
-            landmarkName = "loadImageNetLabels()"
+            landmarkName = "forward(cv::Mat&amp; img)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

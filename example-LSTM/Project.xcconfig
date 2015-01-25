@@ -1,0 +1,40 @@
+//THE PATH TO THE ROOT OF OUR OF PATH RELATIVE TO THIS PROJECT.
+//THIS NEEDS TO BE DEFINED BEFORE CoreOF.xcconfig IS INCLUDED
+OF_PATH = ../../..
+
+//THIS HAS ALL THE HEADER AND LIBS FOR OF CORE
+#include "../../../libs/openFrameworksCompiled/project/osx/CoreOF.xcconfig"
+
+OPENCV_HEADERS_PATH = $(OF_PATH)/addons/ofxOpenCv/libs/opencv/include
+OPENCV_LIBS_PATH = ../../../addons/ofxCaffe/libs/opencv
+
+//ICONS - NEW IN 0072 
+ICON_NAME_DEBUG = icon-debug.icns
+ICON_NAME_RELEASE = icon.icns
+ICON_FILE_PATH = $(OF_PATH)/libs/openFrameworksCompiled/project/osx/
+
+//IF YOU WANT AN APP TO HAVE A CUSTOM ICON - PUT THEM IN YOUR DATA FOLDER AND CHANGE ICON_FILE_PATH to:
+//ICON_FILE_PATH = bin/data/
+
+HDF5_LIBS_PATH = ../../../addons/ofxCaffe/libs/hdf5
+HDF5_LIB_NAME = libhdf5*.dylib
+
+CAFFE_DEPENDS_HEADERS_PATH = /usr/local/include /System/Library/Frameworks/vecLib.framework/Versions/Current/Headers/ /usr/local/include/google/protobuf
+CAFFE_DEPENDS_LIBS_PATH = /usr/local/lib
+CAFFE_DEPENDS_LIBS = -lglog -lgflags -lprotobuf -lleveldb -lsnappy -llmdb -lboost_system -lhdf5_hl -lhdf5 -lm -lopencv_core -lopencv_highgui -lopencv_imgproc -lcblas
+
+CUDA_LIBS_PATH = /Developer/NVIDIA/CUDA-6.5/lib
+CUDA_HEADERS_PATH = /Developer/NVIDIA/CUDA-6.5/include
+CUDA_LIBS = -lcudart -lcublas -lcurand
+
+CAFFE_LIBS_PATH = ../../../../libs/caffe-lstm/build/lib
+CAFFE_HEADERS_PATH = ../../../../libs/caffe-lstm/include
+CAFFE_LIBS = -lcaffe
+
+LIBCLUSTER_LIBS_PATH = ../../../../pkm/pkmDPGMM/libcluster/lib
+LIBCLUSTER_HEADERS_PATH = ../../../../pkm/pkmDPGMM/libcluster/include
+LIBCLUSTER_LIBS = -llibcluster
+
+OTHER_LDFLAGS = $(OF_CORE_LIBS) $(CAFFE_DEPENDS_LIBS) $(CUDA_LIBS) //$(CAFFE_LIBS)
+LIBRARY_SEARCH_PATHS = $(CAFFE_DEPENDS_LIBS_PATH) $(CUDA_LIBS_PATH) $(CAFFE_LIBS_PATH)
+HEADER_SEARCH_PATHS = $(OF_CORE_HEADERS) $(CAFFE_DEPENDS_HEADERS_PATH) $(OPENCV_HEADERS_PATH) $(CUDA_HEADERS_PATH) $(CAFFE_HEADERS_PATH)

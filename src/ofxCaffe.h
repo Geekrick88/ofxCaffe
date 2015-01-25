@@ -50,6 +50,7 @@
 using namespace caffe;
 using namespace std;
 
+#define WITH_OFXCAFFE_LSTM
 
 #ifdef WITH_OFXCAFFE_LSTM
 
@@ -66,7 +67,7 @@ public:
     
     ofxCaffeLSTM()
     :
-    bAllocated(false)
+    b_allocated(false), b_set_training_data(false)
     {
         // Set GPU
         Caffe::set_mode(Caffe::GPU);
@@ -82,7 +83,7 @@ public:
     
     ~ofxCaffeLSTM()
     {
-        if(bAllocated)
+        if(b_allocated)
         {
             
         }
@@ -118,7 +119,7 @@ public:
     {
         this->model = model;
         string net_solver;
-        sequence_length = 320;
+        sequence_length = 10;
         if (model == OFXCAFFE_LSTM_MODEL_DEEP_LONG)
         {
             net_solver = string("../../../../../addons/ofxCaffe/models/deep_lstm_long_solver.prototxt");
@@ -159,10 +160,105 @@ public:
         + 0.05*sin(25*t+10) - 0.02*cos(45*t + 0.3);
     }
     
-    void makeTrainingData(pkm::Mat training_data)
+    void setTrainingData(vector<pkm::Mat> training_data, vector<pkm::Mat> training_labels)
     {
+        
+        batch_size = training_data.size();
+        sequence_length = training_data[0].rows;
+        num_channels = training_data[0].cols;
+        
+        for (int i = 0; i < training_data.size(); ++i) {
+//            training_data[i].zNormalizeEachCol();
+            cout << "training data " << i << ":" << endl;
+            training_data[i].print();
+            
+            vector<Datum> d;
+            vector<vector<float> > l;
+
+            for (int j = 0; j < batch_size; ++j) {
+                Datum datum;
+                datum.set_channels(num_channels);
+                datum.set_width(1);
+                datum.set_height(1);
+                for (int k = 0; k < num_channels; k++)
+                    datum.add_float_data(training_data[j].row(i)[k]);
+                d.push_back(datum);
+                vector<float> tmp;
+                tmp.push_back(training_labels[j][i]);
+                l.push_back(tmp);
+            }
+
+            batch_data.push_back(d);
+            batch_labels.push_back(l);
+        }
+        
+        layers = net_train->layers();
+        layer_param = layers[0]->layer_param();
+//        layer_param.mutable_memory_data_param()->set_batch_size(batch_size);
+//        layer_param.mutable_memory_data_param()->set_channels(num_channels);
+        
+//
+//
+//        sequence_length = training_labels.size();
+//
+//        
+//        const unsigned char input = 0;
+//        datum.set_channels(1);
+//        datum.set_width(1);
+//        datum.set_height(1);
+//        datum.set_data(&input, 1);
+//        
+//        
+//        // Scale data to lie on [-1, 1]
+//        float mean = 0;
+//        float max_abs = 0;
+//        for (int i = 0; i < sequence_length; ++i) {
+//            float val = training_data[i];
+//            max_abs = max(max_abs, abs(val));
+//        }
+//        
+//        // Subtract mean
+//        for (int i = 0; i < sequence_length; ++i) {
+//            mean += training_data[i] / max_abs;
+//        }
+//        mean /= sequence_length;
+//        
+//        // Make t
+//        for (int i = 0; i < sequence_length; ++i) {
+//            vector<float> l;
+//            float y = f_x(i*0.01) / max_abs - mean;
+//            l.push_back(y);
+//            data.push_back(datum);
+//            labels.push_back(l);
+//        }
+//        
+//        layers = net_train->layers();
+//        layer_param = layers[0]->layer_param();
+//        layer_param.mutable_memory_data_param()->set_batch_size(batch_size);
+        
+        b_set_training_data = true;
+    }
+    
+    void setNumChannels(size_t ch)
+    {
+        num_channels = ch;
+    }
+    
+    void setSequenceLength(size_t sz)
+    {
+        sequence_length = sz;
+    }
+    
+    size_t getSequenceLength()
+    {
+        return sequence_length;
+    }
+    
+    void makeTrainingData()
+    {
+        cout << "training data" << endl;
         const unsigned char input = 0;
-        datum.set_channels(1);
+        datum.set_channels(num_channels);
         datum.set_width(1);
         datum.set_height(1);
         datum.set_data(&input, 1);
@@ -212,15 +308,21 @@ public:
             batch_data.push_back(d);
             batch_labels.push_back(l);
         }
+        
+        b_set_training_data = true;
     }
     
-    void train()
+    void setBeginTraining()
     {
-        float smoothed_loss = 0;
-        
+        smoothed_loss = 0;
         Caffe::set_phase(Caffe::TRAIN);
-        int iter = 0;
-        while(!solver->IsFinished()) {
+        iter = 0;
+    }
+    
+    void doTrainingIteration()
+    {
+        if (b_set_training_data)
+        {
             int batch_idx = iter % (sequence_length / batch_size);
             
             vector<Datum>& batch_d = batch_data[batch_idx];
@@ -228,16 +330,30 @@ public:
             
             ((SeqMemoryDataLayer<float>*)layers[0].get())->DataFetch(batch_d, batch_l, batch_idx == 0);
             solver->SolveIter(smoothed_loss, losses);
+            
             iter++;
         }
     }
     
-    void test(pkm::Mat data)
+    void doTraining()
     {
-        // Output Test
+        setBeginTraining();
+        
+        while(!solver->IsFinished()) {
+            doTrainingIteration();
+        }
+    }
+    
+    void setBeginTesting()
+    {
         Caffe::set_phase(Caffe::TEST);
         net_test->ShareTrainedLayersWith(net_train.get());
-        vector<Blob<float>* > bottom;
+    }
+    
+    void doTesting()
+    {
+        // Output Test
+        
         const vector<boost::shared_ptr<Layer<float> > >& test_layers = net_test->layers();
         for (int i = 0; i < sequence_length; ++i) {
             ((SeqMemoryDataLayer<float>*)test_layers[0].get())->DataFetch(datum, i == 0);
@@ -245,20 +361,35 @@ public:
             CHECK_EQ(result.size(), 1);
             const float* output = result[0]->cpu_data();
             CHECK_EQ(result[0]->count(), 1);
-            vector<float>& l = labels[i];
-            cout << l[0] << " " << output[0] << endl;
+//            vector<float>& l = labels[i];
+//            cout << l[0] << " " << output[0] << endl;
+            cout << output[0] << endl;
         }
     }
     
-    void setSequenceLength(size_t length)
+    // Setting the image automatically calls forward prop and finds the best label
+    void forward(pkm::Mat& input, pkm::Mat &output, bool b_begining_of_sequence = false)
     {
-        sequence_length = length;
+        Datum datum;
+        datum.set_channels(num_channels);
+        datum.set_width(1);
+        datum.set_height(1);
+        for (int k = 0; k < num_channels; k++)
+            datum.add_float_data(input[k]);
+        
+        const vector<boost::shared_ptr<Layer<float> > >& test_layers = net_test->layers();
+        ((SeqMemoryDataLayer<float>*)test_layers[0].get())->DataFetch(datum, b_begining_of_sequence);
+
+        const vector<Blob<float>* >& result = net_test->Forward(bottom);
+        const float* output_ptr = result[0]->cpu_data();
+        output = pkm::Mat(1, result[0]->count(), output_ptr);
+//        cout << "num: " << result[0]->num() << " channels: " << result[0]->channels() << " width: " << result[0]->width() << " height: " << result[0]->height() << endl;
+
+//        sequence.print();
+        cout << output_ptr[0] << endl;
+        
     }
     
-    size_t getSequenceLength()
-    {
-        return sequence_length;
-    }
     
 private:
     // Which model is loaded
@@ -282,13 +413,22 @@ private:
     vector<vector<float> > labels;
     vector<float> losses;
     
+    vector<Blob<float>* > bottom;
+    
+    // current training iteration
+    size_t iter;
+    float smoothed_loss;
+    
     Datum datum;
     
-    // Input parameter's sequence length, and batch size
-    size_t sequence_length, batch_size;
+    // Input parameter's sequence length, batch size, and channels
+    size_t sequence_length, batch_size, num_channels;
     
     // simple flag for when the model has been allocated
-    bool bAllocated;
+    bool b_allocated;
+    
+    // is there data to train on
+    bool b_set_training_data;
 };
 
 #endif
@@ -310,7 +450,7 @@ public:
     
     ofxCaffe()
     :
-    bAllocated(false)
+    b_allocated(false)
     {   
         // Set GPU
         Caffe::set_mode(Caffe::GPU);
@@ -326,7 +466,7 @@ public:
     
     ~ofxCaffe()
     {
-        if(bAllocated)
+        if(b_allocated)
             delete net;
         
         for(int i = 0; i < layer1_imgs.size(); i++)
@@ -472,7 +612,7 @@ public:
             cv::resize(mean_img, mean_img, cv::Size(width, height));
         }
         
-        bAllocated = true;
+        b_allocated = true;
     }
     
     pkm::Mat getLayerByName(string name = "conv5", bool b_collapse_data = true)
@@ -829,7 +969,7 @@ private:
     vector<string> labels;
     
     // simple flag for when the model has been allocated
-    bool bAllocated;
+    bool b_allocated;
     
 private:
     
