@@ -386,8 +386,7 @@ public:
 //        cout << "num: " << result[0]->num() << " channels: " << result[0]->channels() << " width: " << result[0]->width() << " height: " << result[0]->height() << endl;
 
 //        sequence.print();
-        cout << output_ptr[0] << endl;
-        
+        output.print();
     }
     
     

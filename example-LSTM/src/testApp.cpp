@@ -39,13 +39,13 @@ void testApp::setup(){
     
     caffe = std::shared_ptr<ofxCaffeLSTM>(new ofxCaffeLSTM());
     caffe->initModel(ofxCaffeLSTM::getModelTypes()[ofxCaffeLSTM::OFXCAFFE_LSTM_MODEL_DEEP_LONG]);
-    caffe->setSequenceLength(100);
+    caffe->setSequenceLength(50);
     
     current_mode = TRAINING_MODE;
     
     b_mutex = false;
     
-    class_label = -0.1;
+    class_label = -1.0;
 
 }
 
@@ -56,6 +56,12 @@ void testApp::update(){
 
 }
 
+ofColor getColorForLabel(float label)
+{
+    label = ofMap(label, -1.0, 1.0, 0.0, 1.0);
+    return ofColor(190  * label, 180 - label * 180, 190 * label);
+}
+
 //--------------------------------------------------------------
 void testApp::draw(){
     ofBackground(0);
@@ -64,10 +70,7 @@ void testApp::draw(){
     for (int example_i = 0; example_i < training_data.size(); example_i++) {
         
         ofSetLineWidth(1.0f);
-        ofSetColor(140 + (training_labels[example_i].row(0)[0] + 0.1) / 0.3 * 40,
-                   180 - (training_labels[example_i].row(0)[0] + 0.1) / 0.3 * 40,
-                   140 + (training_labels[example_i].row(0)[0] + 0.1) / 0.3 * 40);
-        
+        ofSetColor(getColorForLabel(training_labels[example_i][0]));
         for (int idx_i = 1; idx_i < training_data[example_i].rows; idx_i++) {
             ofDrawLine((0.5 + training_data[example_i].row(idx_i-1)[0]) * ofGetWidth(),
                        (0.5 + training_data[example_i].row(idx_i-1)[1]) * ofGetHeight(),
@@ -88,11 +91,9 @@ void testApp::draw(){
         while(b_mutex) { }
         b_mutex = true;
         ofSetColor(140, 140, 180);
-        ofSetLineWidth(2.0f);
+        ofSetLineWidth(5.0f);
         for (int idx_i = 1; idx_i < testing_data.rows; idx_i++) {
-            ofSetColor(140 + (testing_labels[idx_i] + 0.1) / 0.3 * 40,
-                       180 - (testing_labels[idx_i] + 0.1) / 0.3 * 40,
-                       140 + (testing_labels[idx_i] + 0.1) / 0.3 * 40);
+        ofSetColor(getColorForLabel(testing_labels[idx_i]));
             ofDrawLine((0.5 + testing_data.row(idx_i-1)[0]) * ofGetWidth(),
                        (0.5 + testing_data.row(idx_i-1)[1]) * ofGetHeight(),
                        (0.5 + testing_data.row(idx_i)[0]) * ofGetWidth(),
@@ -128,7 +129,7 @@ void testApp::keyPressed(int key){
     }
     else if(key == '1')
     {
-        class_label = -0.1;
+        class_label = -1.0;
         cout << "class-label: " << class_label << endl;
     }
     else if(key == '2')
@@ -138,7 +139,7 @@ void testApp::keyPressed(int key){
     }
     else if(key == '3')
     {
-        class_label = 0.1;
+        class_label = 1.0;
         cout << "class-label: " << class_label << endl;
     }
 }
