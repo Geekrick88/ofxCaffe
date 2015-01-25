@@ -170,11 +170,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/ofxCaffe.h"
-            timestampString = "443902754.648443"
+            timestampString = "443918697.331819"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "974"
-            endingLineNumber = "974"
+            startingLineNumber = "937"
+            endingLineNumber = "937"
             landmarkName = "class ofxCaffe"
             landmarkType = "3">
          </BreakpointContent>

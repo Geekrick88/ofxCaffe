@@ -58,32 +58,35 @@ void testApp::update(){
 
 ofColor getColorForLabel(float label)
 {
-    label = ofMap(label, -1.0, 1.0, 0.0, 1.0);
+    label = ofMap(ofClamp(label, -1.0, 1.0), -1.0, 1.0, 0.0, 1.0);
     return ofColor(190  * label, 180 - label * 180, 190 * label);
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
     ofBackground(0);
-
+    ofEnableAntiAliasing();
+    ofEnableAlphaBlending();
+    ofEnableSmoothing();
+    
     // draw training data
     for (int example_i = 0; example_i < training_data.size(); example_i++) {
         
         ofSetLineWidth(1.0f);
-        ofSetColor(getColorForLabel(training_labels[example_i][0]));
-        for (int idx_i = 1; idx_i < training_data[example_i].rows; idx_i++) {
-            ofDrawLine((0.5 + training_data[example_i].row(idx_i-1)[0]) * ofGetWidth(),
-                       (0.5 + training_data[example_i].row(idx_i-1)[1]) * ofGetHeight(),
-                       (0.5 + training_data[example_i].row(idx_i)[0]) * ofGetWidth(),
-                       (0.5 + training_data[example_i].row(idx_i)[1]) * ofGetHeight());
+        ofSetColor(getColorForLabel(training_data[example_i][0]));
+        for (int idx_i = 1; idx_i < training_labels[example_i].rows; idx_i++) {
+            ofDrawLine((0.5 + training_labels[example_i].row(idx_i-1)[0]) * ofGetWidth(),
+                       (0.5 + training_labels[example_i].row(idx_i-1)[1]) * ofGetHeight(),
+                       (0.5 + training_labels[example_i].row(idx_i)[0]) * ofGetWidth(),
+                       (0.5 + training_labels[example_i].row(idx_i)[1]) * ofGetHeight());
 //            ofDrawBitmapString(ofToString((int)(training_labels[example_i].row(idx_i)[0] / training_labels[example_i][training_labels[example_i].rows-1] * 100)),
 //                               (0.5 + training_data[example_i].row(idx_i)[0]) * ofGetWidth(),
 //                               (0.5 + training_data[example_i].row(idx_i)[1]) * ofGetHeight());
         }
         ofSetColor(255);
         ofDrawBitmapString(ofToString(example_i+1),
-                           (0.5 + training_data[example_i].row(0)[0]) * ofGetWidth(),
-                           (0.5 + training_data[example_i].row(0)[1]) * ofGetHeight());
+                           (0.5 + training_labels[example_i].row(0)[0]) * ofGetWidth(),
+                           (0.5 + training_labels[example_i].row(0)[1]) * ofGetHeight());
     }
     
     if(current_mode == TESTING_MODE)
@@ -92,16 +95,20 @@ void testApp::draw(){
         b_mutex = true;
         ofSetColor(140, 140, 180);
         ofSetLineWidth(5.0f);
-        for (int idx_i = 1; idx_i < testing_data.rows; idx_i++) {
-        ofSetColor(getColorForLabel(testing_labels[idx_i]));
-            ofDrawLine((0.5 + testing_data.row(idx_i-1)[0]) * ofGetWidth(),
-                       (0.5 + testing_data.row(idx_i-1)[1]) * ofGetHeight(),
-                       (0.5 + testing_data.row(idx_i)[0]) * ofGetWidth(),
-                       (0.5 + testing_data.row(idx_i)[1]) * ofGetHeight());
+        for (int idx_i = 1; idx_i < testing_labels.rows; idx_i++) {
+        ofSetColor(getColorForLabel(class_label));
+            ofDrawLine((0.5 + testing_labels.row(idx_i-1)[0]) * ofGetWidth(),
+                       (0.5 + testing_labels.row(idx_i-1)[1]) * ofGetHeight(),
+                       (0.5 + testing_labels.row(idx_i)[0]) * ofGetWidth(),
+                       (0.5 + testing_labels.row(idx_i)[1]) * ofGetHeight());
         }
         b_mutex = false;
         
     }
+    
+    ofDisableAntiAliasing();
+    ofDisableAlphaBlending();
+    ofDisableSmoothing();
     
 }
 
@@ -112,9 +119,8 @@ void testApp::keyPressed(int key){
     {
         caffe->setBeginTraining();
         caffe->setTrainingData(training_data, training_labels);
-        for (int i = 0; i < 10001; i++) {
+        for(int i = 0; i < 10000; i++)
             caffe->doTrainingIteration();
-        }
         caffe->setBeginTesting();
         
         current_mode = TESTING_MODE;
@@ -162,16 +168,16 @@ void testApp::mouseDragged(int x, int y, int button){
         pkm::Mat m_ex(1, 2, ex);
         float l[1] = { class_label };
         pkm::Mat m_l(1, 1, l);
-        training_example.addExample(m_ex, m_l);
+        training_example.addExample(m_l, m_ex);
     }
     else
     {
         while(b_mutex) { }
         b_mutex = true;
-        pkm::Mat input(1, 2), output;
-        input[0] = mouseX / (float)ofGetWidth() - 0.5;
-        input[1] = mouseY / (float)ofGetHeight() - 0.5;
-        testing_data.push_back(input);
+        
+        float l[1] = { class_label };
+        pkm::Mat input(1, 1, l), output;
+        
         caffe->forward(input, output);
         testing_labels.push_back(output);
         b_mutex = false;
@@ -187,7 +193,7 @@ void testApp::mousePressed(int x, int y, int button){
         pkm::Mat m_ex(1, 2, ex);
         float l[1] = { class_label };
         pkm::Mat m_l(1, 1, l);
-        training_example.addExample(m_ex, m_l);
+        training_example.addExample(m_l, m_ex);
     }
     else
     {
@@ -198,10 +204,10 @@ void testApp::mousePressed(int x, int y, int button){
         testing_data = pkm::Mat();
         testing_labels = pkm::Mat();
         
-        pkm::Mat input(1, 2), output;
-        input[0] = mouseX / (float)ofGetWidth() - 0.5;
-        input[1] = mouseY / (float)ofGetHeight() - 0.5;
-        testing_data.push_back(input);
+        
+        float l[1] = { class_label };
+        pkm::Mat input(1, 1, l), output;
+        
         caffe->forward(input, output, true);
         testing_labels.push_back(output);
         b_mutex = false;
@@ -217,7 +223,7 @@ void testApp::mouseReleased(int x, int y, int button){
         pkm::Mat m_ex(1, 2, ex);
         float l[1] = { class_label };
         pkm::Mat m_l(1, 1, l);
-        training_example.addExample(m_ex, m_l);
+        training_example.addExample(m_l, m_ex);
         training_data.push_back(training_example.getInterpolatedData(caffe->getSequenceLength()));
         training_labels.push_back(training_example.getInterpolatedLabels(caffe->getSequenceLength()));
     }
@@ -225,10 +231,10 @@ void testApp::mouseReleased(int x, int y, int button){
     {
         while(b_mutex) { }
         b_mutex = true;
-        pkm::Mat input(1, 2), output;
-        input[0] = mouseX / (float)ofGetWidth() - 0.5;
-        input[1] = mouseY / (float)ofGetHeight() - 0.5;
-        testing_data.push_back(input);
+        
+        float l[1] = { class_label };
+        pkm::Mat input(1, 1, l), output;
+        
         caffe->forward(input, output);
         testing_labels.push_back(output);
         b_mutex = false;

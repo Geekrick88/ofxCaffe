@@ -165,7 +165,8 @@ public:
         
         batch_size = training_data.size();
         sequence_length = training_data[0].rows;
-        num_channels = training_data[0].cols;
+        num_input_channels = training_data[0].cols;
+        num_label_channels = training_labels[0].cols;
         
         for (int i = 0; i < training_data.size(); ++i) {
 //            training_data[i].zNormalizeEachCol();
@@ -177,14 +178,15 @@ public:
 
             for (int j = 0; j < batch_size; ++j) {
                 Datum datum;
-                datum.set_channels(num_channels);
+                datum.set_channels(num_input_channels);
                 datum.set_width(1);
                 datum.set_height(1);
-                for (int k = 0; k < num_channels; k++)
+                for (int k = 0; k < num_input_channels; k++)
                     datum.add_float_data(training_data[j].row(i)[k]);
                 d.push_back(datum);
                 vector<float> tmp;
-                tmp.push_back(training_labels[j][i]);
+                for (int k = 0; k < num_label_channels; k++)
+                    tmp.push_back(training_labels[j].row(i)[k]);
                 l.push_back(tmp);
             }
 
@@ -194,54 +196,13 @@ public:
         
         layers = net_train->layers();
         layer_param = layers[0]->layer_param();
-//        layer_param.mutable_memory_data_param()->set_batch_size(batch_size);
-//        layer_param.mutable_memory_data_param()->set_channels(num_channels);
-        
-//
-//
-//        sequence_length = training_labels.size();
-//
-//        
-//        const unsigned char input = 0;
-//        datum.set_channels(1);
-//        datum.set_width(1);
-//        datum.set_height(1);
-//        datum.set_data(&input, 1);
-//        
-//        
-//        // Scale data to lie on [-1, 1]
-//        float mean = 0;
-//        float max_abs = 0;
-//        for (int i = 0; i < sequence_length; ++i) {
-//            float val = training_data[i];
-//            max_abs = max(max_abs, abs(val));
-//        }
-//        
-//        // Subtract mean
-//        for (int i = 0; i < sequence_length; ++i) {
-//            mean += training_data[i] / max_abs;
-//        }
-//        mean /= sequence_length;
-//        
-//        // Make t
-//        for (int i = 0; i < sequence_length; ++i) {
-//            vector<float> l;
-//            float y = f_x(i*0.01) / max_abs - mean;
-//            l.push_back(y);
-//            data.push_back(datum);
-//            labels.push_back(l);
-//        }
-//        
-//        layers = net_train->layers();
-//        layer_param = layers[0]->layer_param();
-//        layer_param.mutable_memory_data_param()->set_batch_size(batch_size);
         
         b_set_training_data = true;
     }
     
     void setNumChannels(size_t ch)
     {
-        num_channels = ch;
+        num_input_channels = ch;
     }
     
     void setSequenceLength(size_t sz)
@@ -258,13 +219,13 @@ public:
     {
         cout << "training data" << endl;
         const unsigned char input = 0;
-        datum.set_channels(num_channels);
+        datum.set_channels(num_input_channels);
         datum.set_width(1);
         datum.set_height(1);
         datum.set_data(&input, 1);
         
         
-        // Scale data to lie on [-1, 1]
+        // Get max to scale data to lie on [-1, 1]
         float mean = 0;
         float max_abs = 0;
         for (int i = 0; i < sequence_length; ++i) {
@@ -272,7 +233,7 @@ public:
             max_abs = max(max_abs, abs(val));
         }
         
-        // Subtract mean
+        // Get mean
         for (int i = 0; i < sequence_length; ++i) {
             mean += f_x(i * 0.01) / max_abs;
         }
@@ -319,7 +280,7 @@ public:
         iter = 0;
     }
     
-    void doTrainingIteration()
+    float doTrainingIteration()
     {
         if (b_set_training_data)
         {
@@ -333,6 +294,8 @@ public:
             
             iter++;
         }
+        
+        return smoothed_loss;
     }
     
     void doTraining()
@@ -367,14 +330,14 @@ public:
         }
     }
     
-    // Setting the image automatically calls forward prop and finds the best label
+    // calls forward prop and finds the best label
     void forward(pkm::Mat& input, pkm::Mat &output, bool b_begining_of_sequence = false)
     {
         Datum datum;
-        datum.set_channels(num_channels);
+        datum.set_channels(num_input_channels);
         datum.set_width(1);
         datum.set_height(1);
-        for (int k = 0; k < num_channels; k++)
+        for (int k = 0; k < num_input_channels; k++)
             datum.add_float_data(input[k]);
         
         const vector<boost::shared_ptr<Layer<float> > >& test_layers = net_test->layers();
@@ -421,7 +384,7 @@ private:
     Datum datum;
     
     // Input parameter's sequence length, batch size, and channels
-    size_t sequence_length, batch_size, num_channels;
+    size_t sequence_length, batch_size, num_input_channels, num_label_channels;
     
     // simple flag for when the model has been allocated
     bool b_allocated;
