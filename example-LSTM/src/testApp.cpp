@@ -37,9 +37,11 @@ void testApp::setup(){
 
     ofSetWindowShape(width, height);
     
+    fbo.allocate(width, height);
+    
     caffe = std::shared_ptr<ofxCaffeLSTM>(new ofxCaffeLSTM());
     caffe->initModel(ofxCaffeLSTM::getModelTypes()[ofxCaffeLSTM::OFXCAFFE_LSTM_MODEL_DEEP_LONG]);
-    caffe->setSequenceLength(50);
+    caffe->setSequenceLength(100);
     
     current_mode = TRAINING_MODE;
     
@@ -69,28 +71,13 @@ void testApp::draw(){
     ofEnableAlphaBlending();
     ofEnableSmoothing();
     
-    // draw training data
-    for (int example_i = 0; example_i < training_data.size(); example_i++) {
-        
-        ofSetLineWidth(1.0f);
-        ofSetColor(getColorForLabel(training_data[example_i][0]));
-        for (int idx_i = 1; idx_i < training_labels[example_i].rows; idx_i++) {
-            ofDrawLine((0.5 + training_labels[example_i].row(idx_i-1)[0]) * ofGetWidth(),
-                       (0.5 + training_labels[example_i].row(idx_i-1)[1]) * ofGetHeight(),
-                       (0.5 + training_labels[example_i].row(idx_i)[0]) * ofGetWidth(),
-                       (0.5 + training_labels[example_i].row(idx_i)[1]) * ofGetHeight());
-//            ofDrawBitmapString(ofToString((int)(training_labels[example_i].row(idx_i)[0] / training_labels[example_i][training_labels[example_i].rows-1] * 100)),
-//                               (0.5 + training_data[example_i].row(idx_i)[0]) * ofGetWidth(),
-//                               (0.5 + training_data[example_i].row(idx_i)[1]) * ofGetHeight());
-        }
-        ofSetColor(255);
-        ofDrawBitmapString(ofToString(example_i+1),
-                           (0.5 + training_labels[example_i].row(0)[0]) * ofGetWidth(),
-                           (0.5 + training_labels[example_i].row(0)[1]) * ofGetHeight());
-    }
+
     
     if(current_mode == TESTING_MODE)
     {
+        ofSetColor(255);
+        fbo.draw(0, 0, width, height);
+        
         while(b_mutex) { }
         b_mutex = true;
         ofSetColor(140, 140, 180);
@@ -104,6 +91,36 @@ void testApp::draw(){
         }
         b_mutex = false;
         
+    }
+    else
+    {
+        fbo.begin();
+        
+        ofBackground(0);
+        
+        // draw training data
+        for (int example_i = 0; example_i < training_data.size(); example_i++) {
+            
+            ofSetLineWidth(1.0f);
+            ofSetColor(getColorForLabel(training_data[example_i][0]));
+            for (int idx_i = 1; idx_i < training_labels[example_i].rows; idx_i++) {
+                ofDrawLine((0.5 + training_labels[example_i].row(idx_i-1)[0]) * ofGetWidth(),
+                           (0.5 + training_labels[example_i].row(idx_i-1)[1]) * ofGetHeight(),
+                           (0.5 + training_labels[example_i].row(idx_i)[0]) * ofGetWidth(),
+                           (0.5 + training_labels[example_i].row(idx_i)[1]) * ofGetHeight());
+                //            ofDrawBitmapString(ofToString((int)(training_labels[example_i].row(idx_i)[0] / training_labels[example_i][training_labels[example_i].rows-1] * 100)),
+                //                               (0.5 + training_data[example_i].row(idx_i)[0]) * ofGetWidth(),
+                //                               (0.5 + training_data[example_i].row(idx_i)[1]) * ofGetHeight());
+            }
+            ofSetColor(255);
+            ofDrawBitmapString(ofToString(example_i+1),
+                               (0.5 + training_labels[example_i].row(0)[0]) * ofGetWidth(),
+                               (0.5 + training_labels[example_i].row(0)[1]) * ofGetHeight());
+        }
+        
+        fbo.end();
+        
+        fbo.draw(0, 0, width, height);
     }
     
     ofDisableAntiAliasing();
@@ -120,7 +137,8 @@ void testApp::keyPressed(int key){
         caffe->setBeginTraining();
         caffe->setTrainingData(training_data, training_labels);
         for(int i = 0; i < 10000; i++)
-            caffe->doTrainingIteration();
+            if(caffe->doTrainingIteration() < 0.001)
+                break;
         caffe->setBeginTesting();
         
         current_mode = TESTING_MODE;
@@ -198,12 +216,12 @@ void testApp::mousePressed(int x, int y, int button){
     else
     {
         caffe->setBeginTesting();
-//        caffe->doTesting();
+
         while(b_mutex) { }
         b_mutex = true;
+        
         testing_data = pkm::Mat();
         testing_labels = pkm::Mat();
-        
         
         float l[1] = { class_label };
         pkm::Mat input(1, 1, l), output;

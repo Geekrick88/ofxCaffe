@@ -163,7 +163,11 @@ public:
     void setTrainingData(vector<pkm::Mat> training_data, vector<pkm::Mat> training_labels)
     {
         
-        batch_size = training_data.size();
+        layers = net_train->layers();
+        layer_param = layers[0]->layer_param();
+        batch_size = layer_param.memory_data_param().batch_size();
+        
+//        batch_size = training_data.size();
         sequence_length = training_data[0].rows;
         num_input_channels = training_data[0].cols;
         num_label_channels = training_labels[0].cols;
@@ -182,20 +186,17 @@ public:
                 datum.set_width(1);
                 datum.set_height(1);
                 for (int k = 0; k < num_input_channels; k++)
-                    datum.add_float_data(training_data[j].row(i)[k]);
+                    datum.add_float_data(training_data[i].row(j)[k]);
                 d.push_back(datum);
                 vector<float> tmp;
                 for (int k = 0; k < num_label_channels; k++)
-                    tmp.push_back(training_labels[j].row(i)[k]);
+                    tmp.push_back(training_labels[i].row(j)[k]);
                 l.push_back(tmp);
             }
 
             batch_data.push_back(d);
             batch_labels.push_back(l);
         }
-        
-        layers = net_train->layers();
-        layer_param = layers[0]->layer_param();
         
         b_set_training_data = true;
     }

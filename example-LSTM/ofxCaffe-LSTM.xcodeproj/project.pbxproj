@@ -247,6 +247,14 @@
 		89A683791A0713B000DD2B1A /* libcublas.6.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcublas.6.5.dylib; path = "../../../../../../../../Developer/NVIDIA/CUDA-6.5/lib/libcublas.6.5.dylib"; sourceTree = "<group>"; };
 		89A6837A1A0713B000DD2B1A /* libcudart.6.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcudart.6.5.dylib; path = "../../../../../../../../Developer/NVIDIA/CUDA-6.5/lib/libcudart.6.5.dylib"; sourceTree = "<group>"; };
 		89A6837B1A0713B000DD2B1A /* libcufft.6.5.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcufft.6.5.dylib; path = "../../../../../../../../Developer/NVIDIA/CUDA-6.5/lib/libcufft.6.5.dylib"; sourceTree = "<group>"; };
+		89C8A4431A75CA1B001A1F28 /* deep_lstm_long.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = deep_lstm_long.prototxt; path = ../../models/deep_lstm_long.prototxt; sourceTree = "<group>"; };
+		89C8A4441A75CA1B001A1F28 /* deep_lstm_short.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = deep_lstm_short.prototxt; path = ../../models/deep_lstm_short.prototxt; sourceTree = "<group>"; };
+		89C8A4451A75CA1B001A1F28 /* deep_lstm_long_solver.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = deep_lstm_long_solver.prototxt; path = ../../models/deep_lstm_long_solver.prototxt; sourceTree = "<group>"; };
+		89C8A4461A75CA1B001A1F28 /* deep_lstm_short_solver.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = deep_lstm_short_solver.prototxt; path = ../../models/deep_lstm_short_solver.prototxt; sourceTree = "<group>"; };
+		89C8A4471A75CA1B001A1F28 /* lstm_long_solver.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lstm_long_solver.prototxt; path = ../../models/lstm_long_solver.prototxt; sourceTree = "<group>"; };
+		89C8A4481A75CA1B001A1F28 /* lstm_long.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lstm_long.prototxt; path = ../../models/lstm_long.prototxt; sourceTree = "<group>"; };
+		89C8A4491A75CA1B001A1F28 /* lstm_short_solver.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lstm_short_solver.prototxt; path = ../../models/lstm_short_solver.prototxt; sourceTree = "<group>"; };
+		89C8A44A1A75CA1B001A1F28 /* lstm_short.prototxt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = lstm_short.prototxt; path = ../../models/lstm_short.prototxt; sourceTree = "<group>"; };
 		89C8F9A31A5E38AF00D292F1 /* ofxCaffe.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxCaffe.cpp; sourceTree = "<group>"; };
 		89C8F9A41A5E38AF00D292F1 /* ofxCaffe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxCaffe.h; sourceTree = "<group>"; };
 		89CB4DC51A53CB4E00459607 /* H5ACpublic.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = H5ACpublic.h; path = lib/H5ACpublic.h; sourceTree = "<group>"; };
@@ -754,6 +762,21 @@
 			name = cuda;
 			sourceTree = "<group>";
 		};
+		89C8A4391A75C834001A1F28 /* models */ = {
+			isa = PBXGroup;
+			children = (
+				89C8A4431A75CA1B001A1F28 /* deep_lstm_long.prototxt */,
+				89C8A4441A75CA1B001A1F28 /* deep_lstm_short.prototxt */,
+				89C8A4451A75CA1B001A1F28 /* deep_lstm_long_solver.prototxt */,
+				89C8A4461A75CA1B001A1F28 /* deep_lstm_short_solver.prototxt */,
+				89C8A4471A75CA1B001A1F28 /* lstm_long_solver.prototxt */,
+				89C8A4481A75CA1B001A1F28 /* lstm_long.prototxt */,
+				89C8A4491A75CA1B001A1F28 /* lstm_short_solver.prototxt */,
+				89C8A44A1A75CA1B001A1F28 /* lstm_short.prototxt */,
+			);
+			name = models;
+			sourceTree = "<group>";
+		};
 		89C8F9A11A5E38A200D292F1 /* ofxCaffe */ = {
 			isa = PBXGroup;
 			children = (
@@ -994,6 +1017,7 @@
 		E4B69E1C0A3A1BDC003C02F2 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				89C8A4391A75C834001A1F28 /* models */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,

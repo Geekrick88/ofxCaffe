@@ -148,6 +148,8 @@ public:
     // training/testing
     MODE current_mode;
     
+    ofFbo fbo;
+    
     float class_label;
     
     bool b_mutex;
