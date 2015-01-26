@@ -119,7 +119,6 @@ public:
     {
         this->model = model;
         string net_solver;
-        sequence_length = 10;
         if (model == OFXCAFFE_LSTM_MODEL_DEEP_LONG)
         {
             net_solver = string("../../../../../addons/ofxCaffe/models/deep_lstm_long_solver.prototxt");
@@ -151,28 +150,25 @@ public:
         solver->PreSolve();
         
     }
-    
-    // addTrainingExample...: each row as as sequence...
-    // train()
-    
-    double f_x(double t) {
-        return 0.5*sin(2*t) - 0.05*cos(17*t + 0.8)
-        + 0.05*sin(25*t+10) - 0.02*cos(45*t + 0.3);
-    }
-    
+
     void setTrainingData(vector<pkm::Mat> training_data, vector<pkm::Mat> training_labels)
     {
+        if(training_data.size() == 0)
+            return;
+        
+        batch_data.resize(0);
+        batch_labels.resize(0);
         
         layers = net_train->layers();
         layer_param = layers[0]->layer_param();
         batch_size = layer_param.memory_data_param().batch_size();
         
-//        batch_size = training_data.size();
         sequence_length = training_data[0].rows;
         num_input_channels = training_data[0].cols;
         num_label_channels = training_labels[0].cols;
         
         for (int i = 0; i < training_data.size(); ++i) {
+            pkm::Mat mean_label = training_labels[i].mean();
 //            training_labels[i].zNormalizeEachCol();
 //            cout << "training data " << i << ":" << endl;
 //            training_data[i].print();
@@ -192,7 +188,7 @@ public:
                 d.push_back(datum);
                 vector<float> tmp;
                 for (int k = 0; k < num_label_channels; k++)
-                    tmp.push_back(training_labels[i].row(j)[k]);
+                    tmp.push_back(training_labels[i].row(j)[k] - mean_label[k]);
                 l.push_back(tmp);
             }
 
@@ -216,67 +212,6 @@ public:
     size_t getSequenceLength()
     {
         return sequence_length;
-    }
-    
-    void makeTrainingData()
-    {
-        batch_data.resize(0);
-        batch_labels.resize(0);
-        
-        cout << "training data" << endl;
-        const unsigned char input = 0;
-        datum.set_channels(num_input_channels);
-        datum.set_width(1);
-        datum.set_height(1);
-        datum.set_data(&input, 1);
-        
-        
-        // Get max to scale data to lie on [-1, 1]
-        float mean = 0;
-        float max_abs = 0;
-        for (int i = 0; i < sequence_length; ++i) {
-            float val = f_x(i * 0.01);
-            max_abs = max(max_abs, abs(val));
-        }
-        
-        // Get mean
-        for (int i = 0; i < sequence_length; ++i) {
-            mean += f_x(i * 0.01) / max_abs;
-        }
-        mean /= sequence_length;
-        
-        // Make t
-        for (int i = 0; i < sequence_length; ++i) {
-            vector<float> l;
-            float y = f_x(i*0.01) / max_abs - mean;
-            l.push_back(y);
-            data.push_back(datum);
-            labels.push_back(l);
-        }
-        
-        layers = net_train->layers();
-        layer_param = layers[0]->layer_param();
-        batch_size = layer_param.memory_data_param().batch_size();
-        CHECK_EQ(sequence_length % batch_size, 0) << "sequence length should be divided by batchsize";
-        
-        
-        for (int i = 0; i < sequence_length / batch_size; ++i) {
-            vector<Datum> d;
-            vector<vector<float> > l;
-            
-            for (int j = 0; j < batch_size; ++j) {
-                d.push_back(datum);
-                int idx = i * batch_size + j;
-                vector<float> tmp;
-                tmp.push_back(labels[idx].at(0));
-                l.push_back(tmp);
-            }
-            
-            batch_data.push_back(d);
-            batch_labels.push_back(l);
-        }
-        
-        b_set_training_data = true;
     }
     
     void setBeginTraining()
@@ -330,8 +265,6 @@ public:
             CHECK_EQ(result.size(), 1);
             const float* output = result[0]->cpu_data();
             CHECK_EQ(result[0]->count(), 1);
-//            vector<float>& l = labels[i];
-//            cout << l[0] << " " << output[0] << endl;
             cout << output[0] << endl;
         }
     }
@@ -352,9 +285,7 @@ public:
         const vector<Blob<float>* >& result = net_test->Forward(bottom);
         const float* output_ptr = result[0]->cpu_data();
         output = pkm::Mat(1, result[0]->count(), output_ptr);
-//        cout << "num: " << result[0]->num() << " channels: " << result[0]->channels() << " width: " << result[0]->width() << " height: " << result[0]->height() << endl;
 
-//        sequence.print();
         output.print();
     }
     
@@ -378,9 +309,7 @@ private:
     boost::shared_ptr<Solver<float> > solver;
     
     vector<Datum> data;
-    vector<vector<float> > labels;
     vector<float> losses;
-    
     vector<Blob<float>* > bottom;
     
     // current training iteration

@@ -41,7 +41,7 @@ void testApp::setup(){
     
     caffe = std::shared_ptr<ofxCaffeLSTM>(new ofxCaffeLSTM());
     caffe->initModel(ofxCaffeLSTM::getModelTypes()[ofxCaffeLSTM::OFXCAFFE_LSTM_MODEL_DEEP_LONG]);
-    caffe->setSequenceLength(100);
+    caffe->setSequenceLength(50);
     
     current_mode = TRAINING_MODE;
     
@@ -143,9 +143,8 @@ void testApp::keyPressed(int key){
         {
             caffe->setBeginTraining();
             caffe->setTrainingData(training_data, training_labels);
-            for(int i = 0; i < 5000; i++)
-                if(caffe->doTrainingIteration() < 0.001)
-                    break;
+            for(int i = 0; i < 1000; i++)
+                caffe->doTrainingIteration();
             caffe->setBeginTesting();
             
             training_data.resize(0);
@@ -157,9 +156,8 @@ void testApp::keyPressed(int key){
     else if(key == 'C')
     {
         caffe->setBeginTraining();
-        for(int i = 0; i < 5000; i++)
-            if(caffe->doTrainingIteration() < 0.001)
-                break;
+        for(int i = 0; i < 1000; i++)
+            caffe->doTrainingIteration();
     }
     else if(key == 'T')
     {
