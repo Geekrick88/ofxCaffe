@@ -16,5 +16,5 @@ max_iter: 100000
 # solver mode: CPU or GPU
 solver_mode: GPU
 average_loss: 200
-solver_type: NESTEROV
+# solver_type: NESTEROV
 debug_info: true

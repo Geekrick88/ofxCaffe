@@ -45,7 +45,7 @@ void testApp::setup(){
     current_mode = TRAINING_MODE;
     
     b_mutex = false;
-    b_synthesis = true;
+    b_synthesis = false;
     
     class_label = 0.0;
 
@@ -87,7 +87,7 @@ void testApp::draw(){
         if(b_synthesis)
         {
             for (int idx_i = 1; idx_i < testing_labels.rows; idx_i++) {
-            ofSetColor(getColorForLabel(class_label));
+            ofSetColor(getColorForLabel(testing_data[idx_i]));
                 ofDrawLine((0.5 + testing_labels.row(idx_i-1)[0]) * ofGetWidth(),
                            (0.5 + testing_labels.row(idx_i-1)[1]) * ofGetHeight(),
                            (0.5 + testing_labels.row(idx_i)[0]) * ofGetWidth(),
@@ -263,6 +263,7 @@ void testApp::mouseDragged(int x, int y, int button){
             float l[1] = { class_label };
             pkm::Mat input(1, 1, l), output;
             caffe->forward(input, output);
+            testing_data.push_back(input);
             testing_labels.push_back(output);
         }
         else
@@ -306,14 +307,15 @@ void testApp::mousePressed(int x, int y, int button){
         {
             float l[1] = { class_label };
             pkm::Mat input(1, 1, l), output;
-            caffe->forward(input, output);
+            caffe->forward(input, output, true);
+            testing_data.push_back(input);
             testing_labels.push_back(output);
         }
         else
         {
             float ex[2] = { x / (float)ofGetWidth() - 0.5, y / (float)ofGetHeight() - 0.5 };
             pkm::Mat input(1, 2, ex), output;
-            caffe->forward(input, output);
+            caffe->forward(input, output, true);
             testing_data.push_back(input);
             testing_labels.push_back(output);
         }
@@ -348,6 +350,7 @@ void testApp::mouseReleased(int x, int y, int button){
             float l[1] = { class_label };
             pkm::Mat input(1, 1, l), output;
             caffe->forward(input, output);
+            testing_data.push_back(input);
             testing_labels.push_back(output);
         }
         else

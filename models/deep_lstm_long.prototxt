@@ -6,10 +6,10 @@ layers {
   top: "label"
   memory_data_param {
     batch_size: 100
-    channels: 1
+    channels: 2
     height: 1
     width: 1
-    label_channels: 2
+    label_channels: 1
     label_height: 1
     label_width: 1
   }
@@ -21,7 +21,7 @@ layers {
   top: "data"
   memory_data_param {
     batch_size: 1
-    channels: 1
+    channels: 2
     height: 1
     width: 1
   }
@@ -111,7 +111,7 @@ layers {
   blobs_lr: 1
   blobs_lr: 2
   inner_product_param {
-    num_output: 2
+    num_output: 1
     weight_filler {
       type: "gaussian"
       std: 0.05
