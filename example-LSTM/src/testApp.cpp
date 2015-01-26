@@ -58,6 +58,7 @@ void testApp::update(){
 
 }
 
+//--------------------------------------------------------------
 ofColor getColorForLabel(float label)
 {
     label = ofMap(ofClamp(label, -1.0, 1.0), -1.0, 1.0, 0.0, 1.0);
@@ -134,22 +135,47 @@ void testApp::keyPressed(int key){
     cout << (char)key << endl;
     if(key == ' ')
     {
+        if(current_mode == TESTING_MODE)
+        {
+            current_mode = TRAINING_MODE;
+        }
+        else
+        {
+            caffe->setBeginTraining();
+            caffe->setTrainingData(training_data, training_labels);
+            for(int i = 0; i < 5000; i++)
+                if(caffe->doTrainingIteration() < 0.001)
+                    break;
+            caffe->setBeginTesting();
+            
+            training_data.resize(0);
+            training_labels.resize(0);
+            
+            current_mode = TESTING_MODE;
+        }
+    }
+    else if(key == 'C')
+    {
         caffe->setBeginTraining();
-        caffe->setTrainingData(training_data, training_labels);
-        for(int i = 0; i < 10000; i++)
+        for(int i = 0; i < 5000; i++)
             if(caffe->doTrainingIteration() < 0.001)
                 break;
-        caffe->setBeginTesting();
-        
-        current_mode = TESTING_MODE;
     }
     else if(key == 'T')
     {
-        caffe->makeTrainingData();
-        caffe->doTrainingIteration();
-        caffe->setBeginTesting();
-        
-        current_mode = TESTING_MODE;
+        current_mode = current_mode == TESTING_MODE ? TRAINING_MODE : TESTING_MODE;
+            
+    }
+    else if(key == 'D')
+    {
+        if(current_mode == TRAINING_MODE)
+        {
+            if(training_data.size())
+            {
+                training_data.erase(training_data.end());
+                training_labels.erase(training_labels.end());
+            }
+        }
     }
     else if(key == '1')
     {

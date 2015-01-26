@@ -173,9 +173,11 @@ public:
         num_label_channels = training_labels[0].cols;
         
         for (int i = 0; i < training_data.size(); ++i) {
-//            training_data[i].zNormalizeEachCol();
-            cout << "training data " << i << ":" << endl;
-            training_data[i].print();
+//            training_labels[i].zNormalizeEachCol();
+//            cout << "training data " << i << ":" << endl;
+//            training_data[i].print();
+//            cout << "training labels " << i << ":" << endl;
+//            training_labels[i].print();
             
             vector<Datum> d;
             vector<vector<float> > l;
@@ -218,6 +220,9 @@ public:
     
     void makeTrainingData()
     {
+        batch_data.resize(0);
+        batch_labels.resize(0);
+        
         cout << "training data" << endl;
         const unsigned char input = 0;
         datum.set_channels(num_input_channels);
