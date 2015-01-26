@@ -5,7 +5,7 @@ layers {
   top: "data"
   top: "label"
   memory_data_param {
-    batch_size: 50
+    batch_size: 100
     channels: 1
     height: 1
     width: 1
@@ -38,10 +38,10 @@ layers {
   blobs_lr: 1
 
   inner_product_param {
-    num_output: 23
+    num_output: 32
     weight_filler {
       type: "gaussian"
-      std: 0.1
+      std: 0.05
     }
     bias_filler {
       type: "constant"
@@ -63,10 +63,10 @@ layers {
   blobs_lr: 1
 
   inner_product_param {
-    num_output: 23
+    num_output: 32
     weight_filler {
       type: "gaussian"
-      std: 0.1
+      std: 0.05
     }
     bias_filler {
       type: "constant"
@@ -88,10 +88,10 @@ layers {
   blobs_lr: 1
 
   inner_product_param {
-    num_output: 23
+    num_output: 32
     weight_filler {
       type: "gaussian"
-      std: 0.1
+      std: 0.05
     }
     bias_filler {
       type: "constant"
@@ -114,7 +114,7 @@ layers {
     num_output: 2
     weight_filler {
       type: "gaussian"
-      std: 0.1
+      std: 0.05
     }
     bias_filler {
       type: "constant"

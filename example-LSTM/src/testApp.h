@@ -152,5 +152,5 @@ public:
     
     float class_label;
     
-    bool b_mutex;
+    bool b_mutex, b_synthesis;
 };

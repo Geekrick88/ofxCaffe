@@ -147,6 +147,12 @@ public:
         net_train = solver->net();
         net_test = solver->test_nets()[0];
         
+        layers = net_train->layers();
+        layer_param = layers[0]->layer_param();
+        batch_size = layer_param.memory_data_param().batch_size();
+        
+        setSequenceLength(batch_size);
+        
         solver->PreSolve();
         
     }
@@ -159,14 +165,13 @@ public:
         batch_data.resize(0);
         batch_labels.resize(0);
         
-        layers = net_train->layers();
-        layer_param = layers[0]->layer_param();
-        batch_size = layer_param.memory_data_param().batch_size();
-        
         sequence_length = training_data[0].rows;
         num_input_channels = training_data[0].cols;
         num_label_channels = training_labels[0].cols;
         
+        // create batches using each training example in succession... could probably
+        // create batches using multiple examples within a batch, rather than just
+        // data from one example in a batch...
         for (int i = 0; i < training_data.size(); ++i) {
             pkm::Mat mean_label = training_labels[i].mean();
 //            training_labels[i].zNormalizeEachCol();
@@ -225,12 +230,13 @@ public:
     {
         if (b_set_training_data)
         {
-            int batch_idx = iter % (sequence_length / batch_size);
+            int batch_idx = iter % batch_labels.size();
+//            cout << "batch idx: " << batch_idx <<  " / " << batch_labels.size() << endl;
             
             vector<Datum>& batch_d = batch_data[batch_idx];
             vector<vector< float> >& batch_l = batch_labels[batch_idx];
             
-            ((SeqMemoryDataLayer<float>*)layers[0].get())->DataFetch(batch_d, batch_l, batch_idx == 0);
+            ((SeqMemoryDataLayer<float>*)layers[0].get())->DataFetch(batch_d, batch_l, true);
             solver->SolveIter(smoothed_loss, losses);
             
             iter++;
@@ -286,7 +292,7 @@ public:
         const float* output_ptr = result[0]->cpu_data();
         output = pkm::Mat(1, result[0]->count(), output_ptr);
 
-        output.print();
+//        output.print();
     }
     
     
