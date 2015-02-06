@@ -67,7 +67,7 @@ public:
     
     ofxCaffeLSTM()
     :
-    b_allocated(false), b_set_training_data(false)
+    b_allocated(false), b_set_training_data(false), b_use_float_data(true)
     {
         // Set GPU
         Caffe::set_mode(Caffe::GPU);
@@ -114,6 +114,20 @@ public:
         return getModelTypes().size();
     }
     
+    void setNumChannels(size_t ch)
+    {
+        num_input_channels = ch;
+    }
+    
+    void setSequenceLength(size_t sz)
+    {
+        sequence_length = sz;
+    }
+    
+    size_t getSequenceLength()
+    {
+        return sequence_length;
+    }
     
     void initModel(OFXCAFFE_LSTM_MODEL_TYPE model)
     {
@@ -188,8 +202,13 @@ public:
                 datum.set_channels(num_input_channels);
                 datum.set_width(1);
                 datum.set_height(1);
-                for (int k = 0; k < num_input_channels; k++)
-                    datum.add_float_data(training_data[i].row(j)[k]);
+//                if(b_use_float_data)
+                    for (int k = 0; k < num_input_channels; k++)
+                        datum.add_float_data(training_data[i].row(j)[k]);
+//                else
+//                    for (int k = 0; k < num_input_channels; k++)
+//                        datum.set_data(training_data[i].row(j)[k]);
+                
                 d.push_back(datum);
                 vector<float> tmp;
                 for (int k = 0; k < num_label_channels; k++)
@@ -202,21 +221,6 @@ public:
         }
         
         b_set_training_data = true;
-    }
-    
-    void setNumChannels(size_t ch)
-    {
-        num_input_channels = ch;
-    }
-    
-    void setSequenceLength(size_t sz)
-    {
-        sequence_length = sz;
-    }
-    
-    size_t getSequenceLength()
-    {
-        return sequence_length;
     }
     
     void setBeginTraining()
@@ -282,8 +286,12 @@ public:
         datum.set_channels(num_input_channels);
         datum.set_width(1);
         datum.set_height(1);
-        for (int k = 0; k < num_input_channels; k++)
-            datum.add_float_data(input[k]);
+//        if(b_use_float_data)
+            for (int k = 0; k < num_input_channels; k++)
+                datum.add_float_data(input[k]);
+//        else
+//            for (int k = 0; k < num_input_channels; k++)
+//                datum.add_data(input[k]);
         
         const vector<boost::shared_ptr<Layer<float> > >& test_layers = net_test->layers();
         ((SeqMemoryDataLayer<float>*)test_layers[0].get())->DataFetch(datum, b_begining_of_sequence);
@@ -332,6 +340,9 @@ private:
     
     // is there data to train on
     bool b_set_training_data;
+    
+    // are the labels floating point data?
+    bool b_use_float_data;
 };
 
 #endif

@@ -39,7 +39,7 @@ void testApp::setup(){
     camera.initGrabber(width, height);
     color_img.allocate(width, height);
     
-    current_model = 0;
+    current_model = 5;
     
     caffe = std::shared_ptr<ofxCaffe>(new ofxCaffe());
     caffe->initModel(ofxCaffe::getModelTypes()[current_model]);
